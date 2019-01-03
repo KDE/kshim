@@ -5,3 +5,5 @@ project(KShim VERSION 0.1)
 set (CMAKE_CXX_STANDARD 14)
 
 add_executable(kshimgen main.cpp)
+
+install(TARGETS kshimgen RUNTIME DESTINATION bin)
