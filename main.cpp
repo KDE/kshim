@@ -52,9 +52,11 @@ std::string binaryName()
 #else
     size = readlink("/proc/self/exe", const_cast<char*>(out.data()), BufSize);
 #endif
-    if (size>0)
-    {
+    if (size>0) {
         out.resize(size);
+    } else {
+        std::cerr << "Failed to locate shimgen" << std::endl;
+        exit(1);
     }
     return out;
 }
