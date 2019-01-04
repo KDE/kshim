@@ -14,7 +14,6 @@
 
 /* TODO:
 # correctly locate self to use as source, argv[0] is unreliable
-# fix quouting on windows
 # fix relative commands
 
 */
@@ -143,8 +142,15 @@ int run(int argc, char *argv[])
     if (argc >= 2) {
         cmd << " " << quoteArgs(argc, argv, 1);
     }
-    std::cout << "#" << cmd.str() << "#" << std::endl;
-    return std::system(cmd.str().c_str());
+#ifdef _WIN32
+    std::stringstream cmdWin;
+    cmdWin << "\"" << cmd.str() << "\"";
+    const std::string command = cmdWin.str();
+#else
+    const std::string command = cmd.str();
+#endif
+    std::cout << "#" << command << "#" << std::endl;
+    return std::system(command.c_str());
 }
 }
 
