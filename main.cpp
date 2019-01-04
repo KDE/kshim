@@ -15,14 +15,13 @@
 #include <sys/stat.h>
 #endif
 
-/* TODO:
-# fix relative commands
-
-*/
+#ifdef __APPLE__
+#include <libproc.h>
+#endif
 
 namespace {
 #define KShimDataDef "KShimData"
-static const int BufSize = 256;
+static const int BufSize = 1024;
 
 #ifdef _WIN32
 static const char DirSep = '\\';
@@ -32,7 +31,7 @@ static const char DirSep     = '/';
 
 struct command
 {
-    const char cmd[BufSize*2];
+    const char cmd[BufSize];
 };
 
 static const command StartupCommand {
@@ -48,6 +47,8 @@ std::string binaryName()
     std::string out(BufSize, 0);
 #ifdef _WIN32
     size = GetModuleFileName(nullptr, const_cast<char*>(out.data()), BufSize);
+#elif __APPLE__
+    size = proc_pidpath(getpid(), const_cast<char*>(out.data()), BufSize);
 #else
     size = readlink("/proc/self/exe", const_cast<char*>(out.data()), BufSize);
 #endif
