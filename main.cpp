@@ -3,18 +3,24 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <regex>
 #include <sstream>
-
 #include <tuple>
+#include <vector>
+
+#ifndef _WIN32
+#include <sys/stat.h>
+#endif
+
+/* TODO:
+# correctly locate self to use as source, argv[0] is unreliable
+# fix quouting on windows
+# fix relative commands
+
+*/
 
 namespace {
-#define KShimStart "KShimStart"
-
-#ifdef _WIN32
-static const char QuoteDelim = '"';
-#else
-static const char QuoteDelim = '\'';
-#endif
+#define KShimDataDef "KShimData"
 
 struct command
 {
@@ -22,21 +28,33 @@ struct command
 };
 
 static const command StartupCommand {
-    KShimStart
+    KShimDataDef
 };
 }
 
 namespace KShim
 {
-std::string quote(int argc, char *argv[], int offset=0)
+std::string quote(const std::string &arg)
+{
+    static std::regex pat("\\s");
+    if (std::regex_search(arg, pat))
+    {
+        std::stringstream out;
+        out << std::quoted(arg);
+        return out.str();
+    }
+    return arg;
+}
+
+std::string quoteArgs(int argc, char *argv[], int offset=0)
 {
     if (argc <= offset)    {
         return {};
     }
     std::stringstream command;
-    command << std::quoted(argv[offset], QuoteDelim);
+    command << quote(argv[offset]);
     for (int i = offset + 1; i < argc; ++i) {
-        command << " " << std::quoted(argv[i], QuoteDelim);
+        command << " " << quote(argv[i]);
     }
     return command.str();
 }
@@ -44,15 +62,16 @@ std::string quote(int argc, char *argv[], int offset=0)
 std::string normaliseApllication(const std::string &app)
 {
 #ifdef _WIN32
-    if (app.rfind(".exe", 0) == std::string::npos) {
-        return std::string(app).append(".exe");
+    const std::string exesuffix = ".exe";
+    if (app.rfind(exesuffix, app.length() - exesuffix.length()) == std::string::npos) {
+        return std::string(app).append(exesuffix);
     }
 #endif
     return app;
 }
 
 
-std::tuple<char *, size_t> readBin(const std::string &name)
+std::vector<char> readBin(const std::string &name)
 {
     std::ifstream me;
     me.open(name, std::ios::in | std::ios::binary);
@@ -65,31 +84,36 @@ std::tuple<char *, size_t> readBin(const std::string &name)
     size_t size = static_cast<size_t>(me.tellg());
     me.seekg (0, me.beg);
 
-    char *buf = new char[size];
-    me.read(buf, static_cast<std::streamsize>(size));
+    std::vector<char> buf(size);
+    me.read(buf.data(), static_cast<std::streamsize>(size));
     me.close();
-    return {buf, size};
+    std::cout << "Read: " << name << " " << size << " bytes" << std::endl;
+    return buf;
 }
 
-bool writeBin(const std::string &name, const std::string &command, char *buf, size_t size)
+bool writeBin(const std::string &name, const std::string &command, const std::vector<char> &data)
 {
-    std::string pattern(KShimStart);
-    pattern.resize(sizeof(StartupCommand.cmd));
-    auto start = std::search(buf, buf + size, pattern.data(), pattern.data() + pattern.size());
+    std::vector<char> dataOut = data;
+
+    // look for the end mark and search for the start from there
+    const auto cmdIt = std::search(dataOut.begin(), dataOut.end(), StartupCommand.cmd, StartupCommand.cmd + sizeof(StartupCommand.cmd));
+    const size_t cmdIndex = static_cast<size_t>(std::distance(dataOut.begin(), cmdIt));
 
     std::ofstream out;
     out.open(name, std::ios::out | std::ios::binary);
     if (!out.is_open()) {
-        std::cout << "Failed to open out: " << name << std::endl;
+        std::cerr << "Failed to open out: " << name << std::endl;
         return false;
     }
-    out.write(buf, start - buf);
-    out << command;
-
-    auto pos = start + command.size();
-    out.write(pos, buf + size - pos);
-
+    std::copy(command.begin(), command.end(), cmdIt);
+    dataOut[cmdIndex + command.size()] = 0;
+    out.write(dataOut.data(), static_cast<std::streamsize>(data.size()));
+    std::cout << "Wrote: " << name << " " << out.tellp() << " bytes" << std::endl;
     out.close();
+
+#ifndef _WIN32
+    chmod(name.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
     return true;
 }
 
@@ -99,18 +123,15 @@ int createShim(int argc, char *argv[])
         std::cerr << "Too few arguments" << std::endl;
         return -1;
     }
-    const std::string app = normaliseApllication(argv[0]);
+    const std::string sourceName = normaliseApllication(argv[0]);
     const std::string outApp = normaliseApllication(argv[2]);
-    const std::string command = quote(argc, argv, 3);
-    std::cout << outApp << " command: " << command << std::endl;
+    std::stringstream command;
+    command << quoteArgs(argc, argv, 3);
+    std::cout << outApp << " command: " << command.str() << std::endl;
 
-    char *buf;
-    size_t size;
-    std::tie(buf, size) = readBin(app);
-    if (size > 0) {
-        bool out = writeBin(outApp, command, buf, size);
-        delete [] buf;
-        return 0;
+    const std::vector<char> data = readBin(sourceName);
+    if (!data.empty()) {
+        return writeBin(outApp, command.str(), data) ? 0 : 1;
     }
     return 1;
 }
@@ -118,22 +139,18 @@ int createShim(int argc, char *argv[])
 int run(int argc, char *argv[])
 {
     std::stringstream cmd;
-#ifdef _WIN32
-    cmd << "\"";
-#endif
     cmd << StartupCommand.cmd;
-    cmd  << quote(argc, argv, 1);
-#ifdef _WIN32
-    cmd << "\"";
-#endif
-    std::cout << cmd.str() << std::endl;
+    if (argc >= 2) {
+        cmd << " " << quoteArgs(argc, argv, 1);
+    }
+    std::cout << "#" << cmd.str() << "#" << std::endl;
     return std::system(cmd.str().c_str());
 }
 }
 
 int main(int argc, char *argv[])
 {
-    if (StartupCommand.cmd == std::string(KShimStart)) {
+    if (StartupCommand.cmd == std::string(KShimDataDef)) {
         if (argc > 1) {
             const std::string arg1 = argv[1];
             if (arg1 == "--create") {
