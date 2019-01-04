@@ -24,6 +24,12 @@ namespace {
 #define KShimDataDef "KShimData"
 static const int BufSize = 256;
 
+#ifdef _WIN32
+static const char DirSep = '\\';
+#else
+static const char DirSep     = '/';
+#endif
+
 struct command
 {
     const char cmd[BufSize*2];
@@ -50,6 +56,25 @@ std::string binaryName()
         out.resize(size);
     }
     return out;
+}
+
+std::string makeAbsouteCommand(const std::string &_path)
+{
+    std::string path = _path;
+    std::stringstream out;
+    if (path[0] == '"')
+    {
+        out << '"';
+        path = path.erase(0, 1);
+    }
+    if (path[0] == '/' || (path.length() >= 2 && path[1] == ':')) {
+        out <<  path;
+    } else {
+        auto app = binaryName();
+        app = app.substr(0, app.rfind(DirSep));
+        out << app << DirSep << path;
+    }
+    return out.str();
 }
 
 std::string quote(const std::string &arg)
@@ -156,7 +181,7 @@ int createShim(int argc, char *argv[])
 int run(int argc, char *argv[])
 {
     std::stringstream cmd;
-    cmd << StartupCommand.cmd;
+    cmd << makeAbsouteCommand(StartupCommand.cmd);
     if (argc >= 2) {
         cmd << " " << quoteArgs(argc, argv, 1);
     }
