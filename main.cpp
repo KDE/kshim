@@ -8,22 +8,25 @@
 #include <tuple>
 #include <vector>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
 #include <sys/stat.h>
 #endif
 
 /* TODO:
-# correctly locate self to use as source, argv[0] is unreliable
 # fix relative commands
 
 */
 
 namespace {
 #define KShimDataDef "KShimData"
+static const int BufSize = 256;
 
 struct command
 {
-    const char cmd[256*2];
+    const char cmd[BufSize*2];
 };
 
 static const command StartupCommand {
@@ -33,6 +36,22 @@ static const command StartupCommand {
 
 namespace KShim
 {
+std::string binaryName()
+{
+    size_t size;
+    std::string out(BufSize, 0);
+#ifdef _WIN32
+    size = GetModuleFileName(nullptr, const_cast<char*>(out.data()), BufSize);
+#else
+    size = readlink("/proc/self/exe", const_cast<char*>(out.data()), BufSize);
+#endif
+    if (size>0)
+    {
+        out.resize(size);
+    }
+    return out;
+}
+
 std::string quote(const std::string &arg)
 {
     static std::regex pat("\\s");
@@ -122,13 +141,12 @@ int createShim(int argc, char *argv[])
         std::cerr << "Too few arguments" << std::endl;
         return -1;
     }
-    const std::string sourceName = normaliseApllication(argv[0]);
     const std::string outApp = normaliseApllication(argv[2]);
     std::stringstream command;
     command << quoteArgs(argc, argv, 3);
     std::cout << outApp << " command: " << command.str() << std::endl;
 
-    const std::vector<char> data = readBin(sourceName);
+    const std::vector<char> data = readBin(binaryName());
     if (!data.empty()) {
         return writeBin(outApp, command.str(), data) ? 0 : 1;
     }
