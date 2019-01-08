@@ -40,7 +40,7 @@ vector<char> readBinary()
     ifstream me;
     me.open(name, ios::in | ios::binary);
     if (!me.is_open()) {
-        cout << "Failed to open: " << name << endl;
+        cerr << "Failed to open: " << name << endl;
         return {};
     }
 
@@ -51,7 +51,7 @@ vector<char> readBinary()
     vector<char> buf(size);
     me.read(buf.data(), static_cast<streamsize>(size));
     me.close();
-    cout << "Read: " << name << " " << size << " bytes" << endl;
+    kLog << "Read: " << name << " " << size << " bytes";
     return buf;
 }
 
@@ -78,7 +78,7 @@ bool writeBinary(const string &name, const KShimData &shimData, const vector<cha
     }
     copy(json.cbegin(), json.cend(), cmdIt);
     out.write(dataOut.data(), static_cast<streamsize>(binary.size()));
-    cout << "Wrote: " << name << " " << out.tellp() << " bytes" << endl;
+    kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
     out.close();
 
 #ifndef _WIN32
@@ -112,7 +112,7 @@ string KShim::binaryName()
 int KShim::run(const KShimData &data, const vector<string> &args)
 {
     auto command = data.formatCommand({args.cbegin() + 1, args.cend()});
-    cout << "#" << command << "#" << endl;
+    kLog << "#" << command << "#";
     return system(command.c_str());
 }
 
@@ -133,3 +133,16 @@ bool KShim::createShim(KShimData &shimData, const vector<string> &args)
     return false;
 }
 
+bool KLog::s_doLog = std::getenv("KSHIM_LOG");
+
+KLog::KLog()
+{
+
+}
+
+KLog::~KLog()
+{
+    if (s_doLog) {
+        cout << endl;
+    }
+}
