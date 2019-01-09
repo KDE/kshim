@@ -2,7 +2,7 @@ import subprocess
 import shutil
 import os
 
-src = [os.path.join(os.path.dirname(__file__), x) for x in ["main.cpp", "kshimdata.cpp", "kshim.cpp"]]
+src = [os.path.join(os.path.dirname(__file__), "src", x) for x in ["main.cpp", "kshimdata.cpp", "kshim.cpp"]]
 
 def run( args : [str]) -> int:
     print(" ".join(args))
