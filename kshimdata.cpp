@@ -32,7 +32,8 @@ KShimData::KShimData()
 {
     if (isShim())
     {
-        json data = json::parse(m_rawData);
+        kLog << "Load raw Data: " << StartupCommand.cmd;
+        json data = json::parse(StartupCommand.cmd);
         m_app = data["app"].get<string>();
         m_args = data["args"].get<vector<string>>();
     }
@@ -102,7 +103,7 @@ string KShimData::makeAbsouteCommand(const string &_path) const
         out << '"';
         path = path.erase(0, 1);
     }
-    if (path[0] == '/' || (path.length() >= 2 && path[1] == ':')) {
+    if (path[0] != '.') {
         out <<  path;
     } else {
         auto app = KShim::binaryName();
