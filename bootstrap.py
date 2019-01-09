@@ -11,6 +11,6 @@ def run( args : [str]) -> int:
 if shutil.which("cl"):
     run(["cl", "/EHsc", "/O1", "/Fe:kshimgen"] + src)
 elif shutil.which("g++"):
-    run(["g++", "-O2", "-okshimgen"] + src)
+    run(["g++", "-O2", "-std=c++14", "-okshimgen"] + src)
 elif shutil.which("clang++"):
-    run(["clang++", "-O2", "-okshimgen"] + src)
+    run(["clang++", "-O2", "-std=c++14", "-okshimgen"] + src)
