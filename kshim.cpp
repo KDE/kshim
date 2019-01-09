@@ -23,7 +23,7 @@ using namespace std;
 
 namespace  {
 
-string normaliseApllication(const string &app)
+string normaliseApplicationName(const string &app)
 {
 #ifdef _WIN32
     const string exesuffix = ".exe";
@@ -123,7 +123,7 @@ bool KShim::createShim(KShimData &shimData, const vector<string> &args)
         cerr << "Too few arguments" << endl;
         return false;
     }
-    const string outApp = normaliseApllication(args[2]);
+    const string outApp = normaliseApplicationName(args[2]);
     shimData.setApp(args[3]);
     shimData.setArgs({args.cbegin() + 4, args.cend()});
     const vector<char> binary = readBinary();
