@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
         args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
         args::NargsValueFlag<std::string> create(parser, "shim target", "Create a shim", {"create"}, 2);
         args::ValueFlagList<std::string> env(parser, "env", "Sets an environment variable before calling the target", {'e', "env"});
-        args::PositionalList<std::string> create_args(parser, "args", "Arguments passed to the target", {"args"});
+        args::PositionalList<std::string> create_args(parser, "args", "Arguments passed to the target");
         args::CompletionFlag completion(parser, {"create", "env"});
 
         try {
@@ -59,9 +59,7 @@ int main(int argc, char *argv[])
         }
         if(create) {
             const std::vector<std::string> shin_args = create.Get();
-            return KShim::createShim(data, shin_args[0], shin_args[1],
-                                     create_args ? create_args.Get() : std::vector<std::string>(),
-                                     env ? env.Get() : std::vector<std::string>()) ? 0 : -1;
+            return KShim::createShim(data, shin_args[0], shin_args[1], create_args.Get(), env.Get()) ? 0 : -1;
         } else {
             std::cerr << parser;
             return 1;
