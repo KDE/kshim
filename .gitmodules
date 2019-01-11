@@ -1,0 +1,6 @@
+[submodule "src/3dparty/json"]
+	path = src/3dparty/json
+	url = https://github.com/nlohmann/json.git
+[submodule "src/3dparty/args"]
+	path = src/3dparty/args
+	url = https://github.com/Taywee/args.git

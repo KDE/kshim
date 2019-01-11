@@ -39,6 +39,11 @@ public:
 
     const std::vector<std::string> &args() const;
     void setArgs(const std::vector<std::string> &args);
+    void addArg(const std::string &arg);
+
+    std::vector<std::string> env() const;
+    void setEnv(const std::vector<std::string> &env);
+    void addEnvVar(const std::string &var);
 
     std::string formatCommand(const std::vector<std::string> &args) const;
 
@@ -46,6 +51,7 @@ public:
     const std::vector<char> &rawData() const;
 
     std::string toJson() const;
+
 private:
     std::string quote(const std::string &arg) const;
     std::string quoteArgs(std::vector<std::string> args) const;
@@ -54,6 +60,7 @@ private:
 
     std::string m_app;
     std::vector<std::string> m_args;
+    std::vector<std::string> m_env;
     std::vector<char> m_rawData;
 
 };

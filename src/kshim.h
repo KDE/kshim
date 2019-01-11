@@ -42,8 +42,8 @@ constexpr char dirSep() {
     return  '/';
 #endif
 }
-int run(const KShimData &data, const std::vector<std::string> &args);
-bool createShim(KShimData &shimData, const std::vector<std::string> &args);
+int run(const KShimData &data, int argc, char *argv[]);
+bool createShim(KShimData &shimData, const std::string &appName, const std::string &target, const std::vector<std::string> &args, const std::vector<std::string> &env);
 std::string binaryName();
 }
 

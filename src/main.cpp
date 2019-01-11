@@ -30,25 +30,41 @@
 #include <string>
 #include <vector>
 
+#include "args.hxx"
+
 int main(int argc, char *argv[])
 {
     KShimData data;
-    std::vector<std::string> args;
-    for (int i = 0; i < argc; ++i)
-    {
-        args.push_back(argv[i]);
-    }
     if (!data.isShim()) {
-        if (argc > 1) {
-            const std::string &arg1 = args[1];
-            if (arg1 == "--create") {
-                return KShim::createShim(data, args) ? 0 : -1;
-            }
-        } else {
-            std::cout << "Usage: --create targe command" << std::endl;
+        args::ArgumentParser parser("KShimGen.", "A simple application wrapper.");
+        args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
+        args::NargsValueFlag<std::string> create(parser, "shim target", "Create a shim", {"create"}, 2);
+        args::ValueFlagList<std::string> env(parser, "env", "Sets an environment variable before calling the target", {'e', "env"});
+        args::PositionalList<std::string> create_args(parser, "args", "Arguments passed to the target", {"args"});
+        args::CompletionFlag completion(parser, {"create", "env"});
+
+        try {
+            parser.ParseCLI(argc, argv);
+
+        } catch (args::Completion e) {
+            std::cout << e.what();
+            return 0;
+        } catch (args::Help) {
+            std::cout << parser;
+            return 0;
+        } catch (args::ParseError e) {
+            std::cerr << e.what() << std::endl;
+            std::cerr << parser;
+            return 1;
         }
-        return -1;
+        if(create) {
+            const std::vector<std::string> args = create.Get();
+            return KShim::createShim(data, args[0], args[1], create_args.Get(), env.Get()) ? 0 : -1;
+        } else {
+            std::cerr << parser;
+            return 1;
+        }
     } else {
-        return KShim::run(data, args);
+        return KShim::run(data, argc, argv);
     }
 }

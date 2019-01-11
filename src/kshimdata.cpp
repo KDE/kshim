@@ -61,6 +61,7 @@ KShimData::KShimData()
         json data = json::parse(StartupCommand.cmd);
         m_app = data["app"].get<string>();
         m_args = data["args"].get<vector<string>>();
+        m_env = data["env"].get<vector<string>>();
     }
 }
 
@@ -82,6 +83,11 @@ const vector<string> &KShimData::args() const
 void KShimData::setArgs(const vector<string> &args)
 {
     m_args = args;
+}
+
+void KShimData::addArg(const string &arg)
+{
+    m_args.push_back(arg);
 }
 
 string KShimData::formatCommand(const vector<string> &arguments) const
@@ -107,10 +113,13 @@ const vector<char> &KShimData::rawData() const
 
 string KShimData::toJson() const
 {
-    return json{
+    auto out = json{
         {"app", app()},
         {"args", args()},
+        {"env", env()},
     }.dump();
+    kLog << "toJson:" << out;
+    return out;
 }
 
 bool KShimData::isShim() const
@@ -136,6 +145,21 @@ string KShimData::makeAbsouteCommand(const string &_path) const
         out << app << KShim::dirSep() << path;
     }
     return quote(out.str());
+}
+
+std::vector<std::string> KShimData::env() const
+{
+    return m_env;
+}
+
+void KShimData::setEnv(const std::vector<std::string> &env)
+{
+    m_env = env;
+}
+
+void KShimData::addEnvVar(const string &var)
+{
+    m_env.push_back(var);
 }
 
 string KShimData::quote(const string &arg) const

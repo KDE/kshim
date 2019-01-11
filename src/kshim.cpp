@@ -34,6 +34,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#define putenv _putenv
 #else
 #include <unistd.h>
 #include <sys/stat.h>
@@ -45,6 +46,8 @@
 
 
 using namespace std;
+
+bool KLog::s_doLog = std::getenv("KSHIM_LOG");
 
 namespace  {
 
@@ -134,31 +137,35 @@ string KShim::binaryName()
     return out;
 }
 
-int KShim::run(const KShimData &data, const vector<string> &args)
+int KShim::run(const KShimData &data, int argc, char *argv[])
 {
-    auto command = data.formatCommand({args.cbegin() + 1, args.cend()});
+    std::vector<std::string> args;
+    for (int i = 1; i < argc; ++i)
+    {
+        args.push_back(argv[i]);
+    }
+    auto command = data.formatCommand(args);
+    for (auto var : data.env())
+    {
+        kLog << "putenv: " << var;
+        putenv(const_cast<char*>(var.c_str()));
+    }
     kLog << "#" << command << "#";
     return system(command.c_str());
 }
 
-
-bool KShim::createShim(KShimData &shimData, const vector<string> &args)
+bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &env)
 {
-    if (args.size() < 3) {
-        cerr << "Too few arguments" << endl;
-        return false;
-    }
-    const string outApp = normaliseApplicationName(args[2]);
-    shimData.setApp(args[3]);
-    shimData.setArgs({args.cbegin() + 4, args.cend()});
+    const string outApp = normaliseApplicationName(appName);
+    shimData.setApp(target);
+    shimData.setArgs(args);
+    shimData.setEnv(env);
     const vector<char> binary = readBinary();
     if (!binary.empty()) {
         return writeBinary(outApp, shimData, binary);
     }
     return false;
 }
-
-bool KLog::s_doLog = std::getenv("KSHIM_LOG");
 
 KLog::KLog()
 {
