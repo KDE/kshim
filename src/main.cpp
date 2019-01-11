@@ -58,8 +58,10 @@ int main(int argc, char *argv[])
             return 1;
         }
         if(create) {
-            const std::vector<std::string> args = create.Get();
-            return KShim::createShim(data, args[0], args[1], create_args.Get(), env.Get()) ? 0 : -1;
+            const std::vector<std::string> shin_args = create.Get();
+            return KShim::createShim(data, shin_args[0], shin_args[1],
+                                     create_args ? create_args.Get() : std::vector<std::string>(),
+                                     env ? env.Get() : std::vector<std::string>()) ? 0 : -1;
         } else {
             std::cerr << parser;
             return 1;
