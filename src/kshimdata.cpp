@@ -168,7 +168,22 @@ string KShimData::quote(const string &arg) const
     if (regex_search(arg, pat))
     {
         stringstream out;
+#if 0
+        // c++14
         out << quoted(arg);
+#else
+        out << '"';
+        for (const auto c : arg)
+        {
+            if (c == '\"' || c == '\\')
+            {
+                out << '\\';
+            }
+            out << c;
+        }
+        out << '"';
+#endif
+
         return out.str();
     }
     return arg;

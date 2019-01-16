@@ -22,4 +22,4 @@ else:
             cxx = ["g++"]
         elif shutil.which("clang++"):
             cxx = ["clang++"]
-    run(cxx + ["-O2", "-std=c++14", "-okshimgen"] + src + includes)
+    run(cxx + ["-O2", "-std=c++11", "-okshimgen"] + src + includes)
