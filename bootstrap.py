@@ -1,5 +1,6 @@
 import subprocess
 import shutil
+import shlex
 import os
 
 srcDir = os.path.dirname(__file__)
@@ -14,9 +15,11 @@ if shutil.which("cl"):
     run(["cl", "/EHsc", "/O1", "/Fe:kshimgen"] + src + includes)
 else:
     cxx = os.environ.get("CXX", "")
-    if not cxx:
+    if cxx:
+        cxx = shlex.split(cxx)
+    else:
         if shutil.which("g++"):
-            cxx = "g++"
+            cxx = ["g++"]
         elif shutil.which("clang++"):
-            cxx = "clang++"
-    run([cxx, "-O2", "-std=c++14", "-okshimgen"] + src + includes)
+            cxx = ["clang++"]
+    run(cxx + ["-O2", "-std=c++14", "-okshimgen"] + src + includes)
