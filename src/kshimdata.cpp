@@ -31,7 +31,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <regex>
 #include <sstream>
 
 #define KShimDataDef "KShimData"
@@ -114,10 +113,10 @@ const vector<char> &KShimData::rawData() const
 string KShimData::toJson() const
 {
     auto out = json{
-        {"app", app()},
-        {"args", args()},
-        {"env", env()},
-    }.dump();
+    {"app", app()},
+    {"args", args()},
+    {"env", env()},
+}.dump();
     kLog << "toJson:" << out;
     return out;
 }
@@ -164,8 +163,20 @@ void KShimData::addEnvVar(const string &var)
 
 string KShimData::quote(const string &arg) const
 {
-    static regex pat("\\s");
-    if (regex_search(arg, pat))
+    bool needsQuote = false;
+    for (const auto c : arg)
+    {
+        needsQuote = c == ' ' || c == '\t';
+        if (needsQuote)
+        {
+            break;
+        }
+    }
+    if (!needsQuote)
+    {
+        return arg;
+    }
+    else
     {
         stringstream out;
 #if 0
@@ -186,7 +197,6 @@ string KShimData::quote(const string &arg) const
 
         return out.str();
     }
-    return arg;
 }
 
 string KShimData::quoteArgs(vector<string> args) const
