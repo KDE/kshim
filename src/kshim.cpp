@@ -94,6 +94,7 @@ bool writeBinary(const string &name, const KShimData &shimData, const vector<cha
     const auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
     if (cmdIt == dataOut.end()) {
       cerr << "Failed to patch binary, please report your compiler" << endl;
+      exit(1);
     }
 
     ofstream out;
