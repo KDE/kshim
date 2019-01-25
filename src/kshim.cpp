@@ -47,7 +47,7 @@
 
 using namespace std;
 
-bool KLog::s_doLog = std::getenv("KSHIM_LOG");
+bool KLog::s_doLog = std::getenv("KSHIM_LOG") != nullptr;
 
 namespace  {
 
@@ -92,6 +92,9 @@ bool writeBinary(const string &name, const KShimData &shimData, const vector<cha
     // look for the end mark and search for the start from there
     const auto &rawData = shimData.rawData();
     const auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
+    if (cmdIt == dataOut.end()) {
+      cerr << "Failed to patch binary, please report your compiler" << endl;
+    }
 
     ofstream out;
     out.open(name, ios::out | ios::binary);
