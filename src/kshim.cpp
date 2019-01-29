@@ -144,6 +144,7 @@ string KShim::binaryName()
 int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     std::vector<std::string> args;
+    args.reserve(argc);
     for (int i = 1; i < argc; ++i)
     {
         args.push_back(argv[i]);

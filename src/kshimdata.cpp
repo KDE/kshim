@@ -61,8 +61,8 @@ KShimData::KShimData()
 {
     if (isShim())
     {
-        kLog << "Load raw Data: " << StartupCommand.cmd;
-        json data = json::parse(StartupCommand.cmd);
+        kLog << "Load raw Data: " << m_rawData.data();
+        json data = json::parse(m_rawData.data());
         m_app = data["app"].get<string>();
         m_args = data["args"].get<vector<string>>();
         m_env = data["env"].get<vector<string>>();
@@ -128,7 +128,7 @@ string KShimData::toJson() const
 
 bool KShimData::isShim() const
 {
-    return StartupCommand.cmd != string(KShimDataDef);
+    return m_rawData.data() != string(KShimDataDef);
 }
 
 
