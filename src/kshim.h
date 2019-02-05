@@ -67,7 +67,7 @@ private:
 template <typename T>
 KLog &operator<< (KLog &log, const T &t) {
     if (KLog::s_doLog) {
-        std::cout << t;
+        std::cerr << t;
     }
     return log;
 }

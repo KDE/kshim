@@ -180,6 +180,6 @@ KLog::KLog()
 KLog::~KLog()
 {
     if (s_doLog) {
-        cout << endl;
+        cerr << endl;
     }
 }
