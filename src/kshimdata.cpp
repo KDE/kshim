@@ -168,40 +168,49 @@ void KShimData::addEnvVar(const string &var)
 
 string KShimData::quote(const string &arg) const
 {
+    // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
+    bool needsQuote = true;
+#if 0
+    // TODO: why do we need to quote everything?
     bool needsQuote = false;
-    for (const auto c : arg)
-    {
+    for (const auto c : arg) {
         needsQuote = c == ' ' || c == '\t';
-        if (needsQuote)
-        {
+        if (needsQuote) {
             break;
         }
     }
-    if (!needsQuote)
-    {
-        return arg;
-    }
-    else
-    {
-        stringstream out;
-#if 0
-        // c++14
-        out << quoted(arg);
-#else
+#endif
+    stringstream out;
+    stringstream backslash;
+    if (needsQuote) {
         out << '"';
-        for (const auto c : arg)
-        {
-            if (c == '\"' || c == '\\')
-            {
-                out << '\\';
+    }
+    for (const auto c : arg)
+    {
+        if(c == '\\') {
+            backslash << c;
+        } else if (c == '"') {
+            const auto bs = backslash.str();
+            out << bs << bs << "\\\"";
+            backslash.str(std::string());
+        } else {
+            const auto bs = backslash.str();
+            if (!bs.empty()) {
+                out << bs;
+                backslash.str(std::string());
             }
             out << c;
         }
-        out << '"';
-#endif
-
-        return out.str();
     }
+    const auto bs = backslash.str();
+    if (!bs.empty()) {
+        out << bs;
+    }
+    if (needsQuote) {
+        out << bs;
+        out << '"';
+    }
+    return out.str();
 }
 
 string KShimData::quoteArgs(vector<string> args) const
