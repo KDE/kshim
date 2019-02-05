@@ -41,17 +41,13 @@ using namespace nlohmann;
 namespace  {
 static const int DataStorageSize = 1024 * 2;
 
+// don't make const to prevent optimisation
 struct command
 {
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-    // don't make const to prevent optimisation
     char cmd[DataStorageSize];
-#else
-    const char cmd[DataStorageSize];
-#endif
 };
 
-static const command StartupCommand {
+static command StartupCommand {
     KShimDataDef
 };
 }
@@ -128,6 +124,7 @@ string KShimData::toJson() const
 
 bool KShimData::isShim() const
 {
+    kLog << "isShim: " << m_rawData.data();
     return m_rawData.data() != string(KShimDataDef);
 }
 
