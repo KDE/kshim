@@ -43,8 +43,12 @@ static const int DataStorageSize = 1024 * 2;
 
 struct command
 {
+#if defined(_MSC_VER) && _MSC_VER <= 1900
     // don't make const to prevent optimisation
     char cmd[DataStorageSize];
+#else
+    const char cmd[DataStorageSize];
+#endif
 };
 
 static const command StartupCommand {
