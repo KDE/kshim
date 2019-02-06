@@ -98,7 +98,7 @@ void KShimData::addArg(const string &arg)
 string KShimData::formatCommand(const vector<string> &arguments) const
 {
     stringstream cmd;
-    cmd << appAbs() << formatArgs(arguments);
+    cmd << quote(appAbs()) << formatArgs(arguments);
     return cmd.str();
 }
 
@@ -149,7 +149,7 @@ string KShimData::makeAbsouteCommand(const string &_path) const
         app = app.substr(0, app.rfind(KShim::dirSep()));
         out << app << KShim::dirSep() << path;
     }
-    return quote(out.str());
+    return out.str();
 }
 
 std::vector<std::string> KShimData::env() const
