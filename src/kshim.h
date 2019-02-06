@@ -53,7 +53,10 @@ public:
     KLog();
     ~KLog();
 
-    KLog &log() { return  *this; }
+    KLog &log() {
+      *this << "KShimgen: ";
+      return  *this;
+    }
 
 private:
     static bool s_doLog;

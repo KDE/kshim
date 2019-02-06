@@ -70,6 +70,11 @@ string KShimData::app() const
     return m_app;
 }
 
+string KShimData::appAbs() const
+{
+    return makeAbsouteCommand(app());
+}
+
 void KShimData::setApp(const string &app)
 {
     m_app = app;
@@ -92,17 +97,16 @@ void KShimData::addArg(const string &arg)
 
 string KShimData::formatCommand(const vector<string> &arguments) const
 {
-#ifdef _WIN32
-    const string extraQuote = "\"";
-#else
-    const string extraQuote = "";
-#endif
     stringstream cmd;
-    cmd << extraQuote
-        << makeAbsouteCommand(app())
-        << quoteArgs(args())
-        << quoteArgs(arguments)
-        << extraQuote;
+    cmd << appAbs() << formatArgs(arguments);
+    return cmd.str();
+}
+
+string KShimData::formatArgs(const std::vector<string> &arguments) const
+{
+    stringstream cmd;
+    cmd << quoteArgs(args())
+        << quoteArgs(arguments);
     return cmd.str();
 }
 
@@ -166,9 +170,6 @@ void KShimData::addEnvVar(const string &var)
 string KShimData::quote(const string &arg) const
 {
     // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
-    bool needsQuote = true;
-#if 0
-    // TODO: why do we need to quote everything?
     bool needsQuote = false;
     for (const auto c : arg) {
         needsQuote = c == ' ' || c == '\t';
@@ -176,7 +177,6 @@ string KShimData::quote(const string &arg) const
             break;
         }
     }
-#endif
     stringstream out;
     stringstream backslash;
     if (needsQuote) {

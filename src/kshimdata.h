@@ -35,6 +35,7 @@ public:
     KShimData();
 
     std::string app() const;
+    std::string appAbs() const;
     void setApp(const std::string &app);
 
     const std::vector<std::string> &args() const;
@@ -46,6 +47,7 @@ public:
     void addEnvVar(const std::string &var);
 
     std::string formatCommand(const std::vector<std::string> &args) const;
+    std::string formatArgs(const std::vector<std::string> &args) const;
 
     bool isShim() const;
     const std::vector<char> &rawData() const;

@@ -93,8 +93,8 @@ bool writeBinary(const string &name, const KShimData &shimData, const vector<cha
     const auto &rawData = shimData.rawData();
     const auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
     if (cmdIt == dataOut.end()) {
-      cerr << "Failed to patch binary, please report your compiler" << endl;
-      exit(1);
+        cerr << "Failed to patch binary, please report your compiler" << endl;
+        exit(1);
     }
 
     ofstream out;
@@ -149,14 +149,33 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
     {
         args.push_back(argv[i]);
     }
-    auto command = data.formatCommand(args);
     for (auto var : data.env())
     {
         kLog << "putenv: " << var;
         putenv(const_cast<char*>(var.c_str()));
     }
-    kLog << "#" << command << "#";
+#ifdef _WIN32
+    // TODO: pass environment
+    STARTUPINFO info = {};
+    PROCESS_INFORMATION pInfo = {};
+    const auto arguments = data.formatArgs(args);
+    kLog << data.appAbs() << arguments;
+    if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &info, &pInfo))
+    {
+        return -1;
+    }
+    WaitForSingleObject(pInfo.hProcess, INFINITE);
+    DWORD exitCode;
+    GetExitCodeProcess(pInfo.hProcess, &exitCode);
+
+    CloseHandle(pInfo.hProcess);
+    CloseHandle(pInfo.hThread);
+    return static_cast<int>(exitCode);
+#else
+    const auto command = data.formatCommand(args);
+    kLog << command;
     return system(command.c_str());
+#endif
 }
 
 bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &env)
