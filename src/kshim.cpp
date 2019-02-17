@@ -158,8 +158,8 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
     // TODO: pass environment
     STARTUPINFO info = {};
     PROCESS_INFORMATION pInfo = {};
-    const auto arguments = data.formatArgs(args);
-    kLog << data.appAbs() << arguments;
+    const auto arguments = data.formatCommand(args);
+    kLog << data.appAbs() << " " << arguments;
     if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &info, &pInfo))
     {
         return -1;
