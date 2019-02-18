@@ -157,10 +157,11 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
 #ifdef _WIN32
     // TODO: pass environment
     STARTUPINFO info = {};
+    info.cb = sizeof (info);
     PROCESS_INFORMATION pInfo = {};
     const auto arguments = data.formatCommand(args);
     kLog << data.appAbs() << " " << arguments;
-    if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, NORMAL_PRIORITY_CLASS, nullptr, nullptr, &info, &pInfo))
+    if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, INHERIT_PARENT_AFFINITY, nullptr, nullptr, &info, &pInfo))
     {
         return -1;
     }
