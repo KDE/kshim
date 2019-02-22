@@ -161,6 +161,7 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
     PROCESS_INFORMATION pInfo = {};
     const auto arguments = data.formatCommand(args);
     kLog << data.appAbs() << " " << arguments;
+    kLog << "CommandLength: " << arguments.size();
     if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, INHERIT_PARENT_AFFINITY, nullptr, nullptr, &info, &pInfo))
     {
         return -1;
@@ -175,6 +176,7 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
 #else
     const auto command = data.formatCommand(args);
     kLog << command;
+    kLog << "CommandLength: " << command.size();
     return system(command.c_str());
 #endif
 }
