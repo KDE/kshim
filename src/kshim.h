@@ -27,6 +27,7 @@
 #define KSHIM_H
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -54,12 +55,14 @@ public:
     ~KLog();
 
     KLog &log() {
+
       *this << "KShimgen: ";
       return  *this;
     }
 
 private:
     static bool s_doLog;
+    std::ofstream &out();
 
     template<typename T>
     friend KLog & operator<<(KLog &, const T&);
@@ -70,7 +73,7 @@ private:
 template <typename T>
 KLog &operator<< (KLog &log, const T &t) {
     if (KLog::s_doLog) {
-        std::cerr << t;
+        log.out() << t;
     }
     return log;
 }

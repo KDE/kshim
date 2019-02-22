@@ -194,12 +194,27 @@ bool KShim::createShim(KShimData &shimData, const string &appName, const string 
 
 KLog::KLog()
 {
-
 }
 
 KLog::~KLog()
 {
     if (s_doLog) {
-        cerr << endl;
+        out() << endl;
     }
+}
+
+ofstream &KLog::out()
+{
+    static ofstream _log;
+    if (s_doLog && !_log.is_open()) {
+        stringstream logPath;
+        logPath << getenv("HOME") << "/.kshim.log";
+        _log.open(logPath.str().c_str(), ofstream::app);
+        if (!_log.is_open())
+        {
+            cerr << "KShim: Failed to open log " << logPath.str() << " " << _log.rdstate() << endl;
+        }
+        _log << "----------------------------" << endl;
+    }
+    return _log;
 }
