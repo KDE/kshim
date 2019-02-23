@@ -65,6 +65,8 @@ int main(int argc, char *argv[])
             return 1;
         }
     } else {
-        return KShim::run(data, argc, argv);
+        int out = KShim::run(data, argc, argv);
+        kLog << "Exit: " << out;
+        return out;
     }
 }
