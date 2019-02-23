@@ -154,7 +154,6 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
         kLog << "putenv: " << var;
         putenv(const_cast<char*>(var.c_str()));
     }
-#undef _WIN32
 #ifdef _WIN32
     std::vector<std::string> args;
     args.reserve(static_cast<size_t>(argc));
