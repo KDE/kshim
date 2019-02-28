@@ -32,6 +32,10 @@
 #include <sys/wait.h>
 #include <cstring>
 
+#ifdef __APPLE__
+#include <libproc.h>
+#endif
+
 using namespace std;
 
 extern char **environ;

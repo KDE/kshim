@@ -32,17 +32,9 @@
 #include <fstream>
 #include <sstream>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
+#ifndef _WIN32
 #include <sys/stat.h>
 #endif
-
-#ifdef __APPLE__
-#include <libproc.h>
-#endif
-
 
 using namespace std;
 
