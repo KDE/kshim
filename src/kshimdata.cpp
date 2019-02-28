@@ -133,23 +133,18 @@ bool KShimData::isShim() const
 }
 
 
-string KShimData::makeAbsouteCommand(const string &_path) const
+string KShimData::makeAbsouteCommand(const string &path) const
 {
-    string path = _path;
-    stringstream out;
-    if (path[0] == '"')
-    {
-        out << '"';
-        path = path.erase(0, 1);
-    }
-    if (path[0] != '.') {
-        out <<  path;
+    assert(path.size() >=1 && path[0] != '"');
+    if(KShim::isAbs(path)) {
+        return path;
     } else {
+        stringstream out;
         auto app = KShim::binaryName();
         app = app.substr(0, app.rfind(KShim::dirSep()));
         out << app << KShim::dirSep() << path;
+        return out.str();
     }
-    return out.str();
 }
 
 vector<pair<string, string> > KShimData::env() const

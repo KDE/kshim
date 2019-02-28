@@ -11,6 +11,11 @@ using namespace std;
 
 extern char **environ;
 
+bool KShim::isAbs(const std::string &s)
+{
+    return s.length() >= 1 && s[0] == KShim::dirSep();
+}
+
 int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())

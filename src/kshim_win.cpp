@@ -3,6 +3,13 @@
 
 #include <windows.h>
 
+using namespace std;
+
+bool KShim::isAbs(const string &s)
+{
+    return s.length() >= 2 && s[1] == ':';
+}
+
 int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())
