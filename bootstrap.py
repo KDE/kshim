@@ -3,9 +3,18 @@ import shutil
 import shlex
 import os
 
+
 srcDir = os.path.dirname(__file__)
-src = [os.path.join(srcDir, "src", x) for x in ["main.cpp", "kshimdata.cpp", "kshim.cpp"]]
 includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["args", "json/single_include"]]
+srcFiles = ["main.cpp", "kshimdata.cpp", "kshim.cpp"]
+
+if os.name == 'nt':
+    srcFiles += ["kshim_win.cpp"]
+else:
+    srcFiles += ["kshim_unix.cpp"]
+
+src = [os.path.join(srcDir, "src", x) for x in srcFiles]
+    
 
 def run( args : [str]) -> int:
     print(" ".join(args))

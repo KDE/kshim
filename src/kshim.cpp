@@ -34,16 +34,9 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#define putenv _putenv
 #else
 #include <unistd.h>
 #include <sys/stat.h>
-#include <spawn.h>
-#include <sys/wait.h>
-#include <cstring>
-
-
-extern char **environ;
 #endif
 
 #ifdef __APPLE__
@@ -145,78 +138,6 @@ string KShim::binaryName()
         exit(1);
     }
     return out;
-}
-
-int KShim::run(const KShimData &data, int argc, char *argv[])
-{
-    for (auto var : data.env())
-    {
-        kLog << "putenv: " << var;
-        putenv(const_cast<char*>(var.c_str()));
-    }
-#ifdef _WIN32
-    std::vector<std::string> args;
-    args.reserve(static_cast<size_t>(argc));
-    for (int i = 1; i < argc; ++i)
-    {
-        args.push_back(argv[i]);
-    }
-    // TODO: pass environment
-    STARTUPINFO info = {};
-    info.cb = sizeof (info);
-    PROCESS_INFORMATION pInfo = {};
-    const auto arguments = data.formatCommand(args);
-    kLog << data.appAbs() << " " << arguments;
-    kLog << "CommandLength: " << arguments.size();
-    if(!CreateProcessA(const_cast<char*>(data.appAbs().c_str()), const_cast<char*>(arguments.c_str()), nullptr, nullptr, true, INHERIT_PARENT_AFFINITY, nullptr, nullptr, &info, &pInfo))
-    {
-        return -1;
-    }
-    WaitForSingleObject(pInfo.hProcess, INFINITE);
-    DWORD exitCode;
-    GetExitCodeProcess(pInfo.hProcess, &exitCode);
-
-    CloseHandle(pInfo.hProcess);
-    CloseHandle(pInfo.hThread);
-    return static_cast<int>(exitCode);
-#else
-    int pos = 0;
-    const size_t size = static_cast<size_t>(argc) + data.args().size() + 1;
-    char **args = new char*[size];
-    auto addArg = [&pos, &args](const string &s)
-    {
-        args[pos] = new char[s.size()+1];
-        strcpy(args[pos++], s.c_str());
-    };
-    addArg(data.appAbs());
-    for (const auto &s : data.args()) {
-        addArg(s);
-    }
-    for (int i = 1; i < argc; ++i) {
-        args[pos++] = argv[i];
-    }
-    args[pos] = nullptr;
-    {
-        auto log = kLog << "Command:";
-        log << data.appAbs();
-        for (size_t i = 0; i < size - 1; ++i){
-            log << " " << args[i];
-        }
-    }
-    pid_t pid;
-    int status;
-    status = posix_spawn(&pid, data.appAbs().c_str(), NULL, NULL, args, environ);
-    if (status == 0) {
-        if (waitpid(pid, &status, 0) != -1) {
-            return status;
-        } else {
-            cerr << "KShim: waitpid error" << endl;
-        }
-    } else {
-        cerr << "KShim: posix_spawn: " << strerror(status) << endl;
-    }
-#endif
-    return -1;
 }
 
 bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &env)
