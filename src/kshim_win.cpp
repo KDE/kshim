@@ -35,6 +35,24 @@ bool KShim::isAbs(const string &s)
     return s.length() >= 2 && s[1] == ':';
 }
 
+string KShim::binaryName()
+{
+    size_t size;
+    string out;
+    do {
+        out.resize(out.size() + 1024);
+        size = GetModuleFileName(nullptr, const_cast<char*>(out.data()), static_cast<DWORD>(out.size()));
+    } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+    if (size>0) {
+        out.resize(size);
+    } else {
+        cerr << "Failed to locate shimgen" << endl;
+        exit(1);
+    }
+    out.resize(size);
+    return out;
+}
+
 int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())

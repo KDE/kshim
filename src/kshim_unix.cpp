@@ -41,6 +41,28 @@ bool KShim::isAbs(const std::string &s)
     return s.length() >= 1 && s[0] == KShim::dirSep();
 }
 
+string KShim::binaryName()
+{
+    size_t size;
+#if __APPLE__
+    string out(PROC_PIDPATHINFO_MAXSIZE, 0);
+    size = proc_pidpath(getpid(), const_cast<char*>(out.data()), out.size());
+#else
+    string out;
+    do {
+        out.resize(out.size() + 1024);
+        size = readlink("/proc/self/exe", const_cast<char*>(out.data()), out.size());
+    } while (out.size() == size);
+#endif
+    if (size>0) {
+        out.resize(size);
+    } else {
+        cerr << "Failed to locate shimgen" << endl;
+        exit(1);
+    }
+    return out;
+}
+
 int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())

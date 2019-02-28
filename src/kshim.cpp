@@ -119,27 +119,6 @@ bool writeBinary(const string &name, const KShimData &shimData, const vector<cha
 }
 }
 
-
-string KShim::binaryName()
-{
-    size_t size;
-    string out(1024, 0);
-#ifdef _WIN32
-    size = GetModuleFileName(nullptr, const_cast<char*>(out.data()), static_cast<DWORD>(out.size()));
-#elif __APPLE__
-    size = proc_pidpath(getpid(), const_cast<char*>(out.data()), out.size());
-#else
-    size = readlink("/proc/self/exe", const_cast<char*>(out.data()), out.size());
-#endif
-    if (size>0) {
-        out.resize(size);
-    } else {
-        cerr << "Failed to locate shimgen" << endl;
-        exit(1);
-    }
-    return out;
-}
-
 bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &_env)
 {
     vector<pair<string,string>> env;
