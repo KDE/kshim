@@ -61,7 +61,7 @@ KShimData::KShimData()
         json data = json::parse(m_rawData.data());
         m_app = data["app"].get<string>();
         m_args = data["args"].get<vector<string>>();
-        m_env = data["env"].get<vector<string>>();
+        m_env = data["env"].get<vector<pair<string, string>>>();
     }
 }
 
@@ -152,17 +152,17 @@ string KShimData::makeAbsouteCommand(const string &_path) const
     return out.str();
 }
 
-std::vector<std::string> KShimData::env() const
+vector<pair<string, string> > KShimData::env() const
 {
     return m_env;
 }
 
-void KShimData::setEnv(const std::vector<std::string> &env)
+void KShimData::setEnv(const vector<pair<string, string> > &env)
 {
     m_env = env;
 }
 
-void KShimData::addEnvVar(const string &var)
+void KShimData::addEnvVar(const pair<string, string> &var)
 {
     m_env.push_back(var);
 }

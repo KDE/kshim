@@ -15,8 +15,8 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())
     {
-        kLog << "putenv: " << var;
-        putenv(const_cast<char*>(var.c_str()));
+        kLog << "setenv: " << var.first << "=" << var.second;
+        setenv(var.first.c_str(), var.second.c_str(), true);
     }
 
     int pos = 0;

@@ -42,9 +42,9 @@ public:
     void setArgs(const std::vector<std::string> &args);
     void addArg(const std::string &arg);
 
-    std::vector<std::string> env() const;
-    void setEnv(const std::vector<std::string> &env);
-    void addEnvVar(const std::string &var);
+    std::vector<std::pair<std::string, std::string>> env() const;
+    void setEnv(const std::vector<std::pair<std::string, std::string> > &env);
+    void addEnvVar(const std::pair<std::string, std::string> &var);
 
     std::string formatCommand(const std::vector<std::string> &args) const;
     std::string formatArgs(const std::vector<std::string> &args) const;
@@ -62,7 +62,7 @@ private:
 
     std::string m_app;
     std::vector<std::string> m_args;
-    std::vector<std::string> m_env;
+    std::vector<std::pair<std::string, std::string>> m_env;
     std::vector<char> m_rawData;
 
 };

@@ -7,8 +7,8 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
 {
     for (auto var : data.env())
     {
-        kLog << "putenv: " << var;
-        _putenv(const_cast<char*>(var.c_str()));
+        kLog << "SetEnvironmentVariable: " << var.first << "=" << var.second;
+        SetEnvironmentVariable(var.first.c_str(), var.second.c_str());
     }
     std::vector<std::string> args;
     args.reserve(static_cast<size_t>(argc));

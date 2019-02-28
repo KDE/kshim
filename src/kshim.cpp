@@ -140,8 +140,15 @@ string KShim::binaryName()
     return out;
 }
 
-bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &env)
+bool KShim::createShim(KShimData &shimData, const string &appName, const string &target, const vector<string> &args,  const vector<string> &_env)
 {
+    vector<pair<string,string>> env;
+    env.reserve(_env.size());
+    for (const auto &e : _env)
+    {
+        const auto pos = e.find("=");
+        env.push_back({e.substr(0, pos), e.substr(pos + 1)});
+    }
     const string outApp = normaliseApplicationName(appName);
     shimData.setApp(target);
     shimData.setArgs(args);
