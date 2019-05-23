@@ -1,2 +1,1 @@
-add_subdirectory(json EXCLUDE_FROM_ALL)
 add_subdirectory(args EXCLUDE_FROM_ALL)

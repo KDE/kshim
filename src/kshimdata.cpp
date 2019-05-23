@@ -26,7 +26,7 @@
 #include "kshimdata.h"
 #include "kshim.h"
 
-#include "nlohmann/json.hpp"
+#include "3dparty/nlohmann/json.hpp"
 
 #include <iostream>
 #include <iomanip>

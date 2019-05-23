@@ -8,7 +8,7 @@ else()
     target_sources(kshimgen PRIVATE kshim_unix.cpp)
 endif()
 
-target_link_libraries(kshimgen PRIVATE nlohmann_json::nlohmann_json args)
+target_link_libraries(kshimgen PRIVATE args)
 target_compile_definitions(kshimgen PRIVATE _CRT_SECURE_NO_WARNINGS)
 
 install(TARGETS kshimgen RUNTIME DESTINATION bin)
