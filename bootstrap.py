@@ -5,7 +5,7 @@ import os
 
 
 srcDir = os.path.dirname(__file__)
-includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["args", "json/single_include"]]
+includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["args", "nlohmann"]]
 srcFiles = ["main.cpp", "kshimdata.cpp", "kshim.cpp"]
 
 if os.name == 'nt':
@@ -14,7 +14,7 @@ else:
     srcFiles += ["kshim_unix.cpp"]
 
 src = [os.path.join(srcDir, "src", x) for x in srcFiles]
-    
+
 
 def run( args : [str]) -> int:
     print(" ".join(args))
