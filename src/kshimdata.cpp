@@ -59,52 +59,52 @@ KShimData::KShimData()
     {
         kLog << "Load raw Data: " << m_rawData.data();
         json data = json::parse(m_rawData.data());
-        m_app = data["app"].get<string>();
-        m_args = data["args"].get<vector<string>>();
-        m_env = data["env"].get<vector<pair<string, string>>>();
+        m_app = data["app"].get<KShim::string>();
+        m_args = data["args"].get<vector<KShim::string>>();
+        m_env = data["env"].get<vector<pair<KShim::string, KShim::string>>>();
     }
 }
 
-string KShimData::app() const
+std::filesystem::path KShimData::app() const
 {
     return m_app;
 }
 
-string KShimData::appAbs() const
+std::filesystem::path KShimData::appAbs() const
 {
     return makeAbsouteCommand(app());
 }
 
-void KShimData::setApp(const string &app)
+void KShimData::setApp(const std::filesystem::path &app)
 {
     m_app = app;
 }
 
-const vector<string> &KShimData::args() const
+const vector<KShim::string> &KShimData::args() const
 {
     return m_args;
 }
 
-void KShimData::setArgs(const vector<string> &args)
+void KShimData::setArgs(const vector<KShim::string> &args)
 {
     m_args = args;
 }
 
-void KShimData::addArg(const string &arg)
+void KShimData::addArg(const KShim::string &arg)
 {
     m_args.push_back(arg);
 }
 
-string KShimData::formatCommand(const vector<string> &arguments) const
+KShim::string KShimData::formatCommand(const vector<KShim::string> &arguments) const
 {
-    stringstream cmd;
+    KShim::stringstream cmd;
     cmd << quote(appAbs()) << formatArgs(arguments);
     return cmd.str();
 }
 
-string KShimData::formatArgs(const std::vector<string> &arguments) const
+KShim::string KShimData::formatArgs(const std::vector<KShim::string> &arguments) const
 {
-    stringstream cmd;
+    KShim::stringstream cmd;
     cmd << quoteArgs(args())
         << quoteArgs(arguments);
     return cmd.str();
@@ -115,54 +115,53 @@ const vector<char> &KShimData::rawData() const
     return m_rawData;
 }
 
-string KShimData::toJson() const
+std::string KShimData::toJson() const
 {
     auto out = json{
-    {"app", app()},
+#ifdef _WIN32
+    {"app", app().wstring()},
+#else
+    {"app", app().string()},
+#endif
     {"args", args()},
     {"env", env()},
 }.dump();
-    kLog << "toJson:" << out;
+    kLog << "toJson:" << out.data();
     return out;
 }
 
 bool KShimData::isShim() const
 {
     kLog << "isShim: " << m_rawData.data();
-    return m_rawData.data() != string(KShimDataDef);
+    return m_rawData.data() != std::string(KShimDataDef);
 }
 
 
-string KShimData::makeAbsouteCommand(const string &path) const
+std::filesystem::path KShimData::makeAbsouteCommand(const std::filesystem::path &path) const
 {
-    assert(path.size() >=1 && path[0] != '"');
-    if(KShim::isAbs(path)) {
+    if(path.is_absolute()) {
         return path;
     } else {
-        stringstream out;
-        auto app = KShim::binaryName();
-        app = app.substr(0, app.rfind(KShim::dirSep()));
-        out << app << KShim::dirSep() << path;
-        return out.str();
+        return KShim::binaryName().parent_path() / path;
     }
 }
 
-vector<pair<string, string> > KShimData::env() const
+vector<pair<KShim::string, KShim::string> > KShimData::env() const
 {
     return m_env;
 }
 
-void KShimData::setEnv(const vector<pair<string, string> > &env)
+void KShimData::setEnv(const vector<pair<KShim::string, KShim::string> > &env)
 {
     m_env = env;
 }
 
-void KShimData::addEnvVar(const pair<string, string> &var)
+void KShimData::addEnvVar(const pair<KShim::string, KShim::string> &var)
 {
     m_env.push_back(var);
 }
 
-string KShimData::quote(const string &arg) const
+KShim::string KShimData::quote(const KShim::string &arg) const
 {
     // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
     bool needsQuote = false;
@@ -172,8 +171,8 @@ string KShimData::quote(const string &arg) const
             break;
         }
     }
-    stringstream out;
-    stringstream backslash;
+    KShim::stringstream out;
+    KShim::stringstream backslash;
     if (needsQuote) {
         out << '"';
     }
@@ -184,12 +183,12 @@ string KShimData::quote(const string &arg) const
         } else if (c == '"') {
             const auto bs = backslash.str();
             out << bs << bs << "\\\"";
-            backslash.str(std::string());
+            backslash.str(KShim::string());
         } else {
             const auto bs = backslash.str();
             if (!bs.empty()) {
                 out << bs;
-                backslash.str(std::string());
+                backslash.str(KShim::string());
             }
             out << c;
         }
@@ -205,9 +204,9 @@ string KShimData::quote(const string &arg) const
     return out.str();
 }
 
-string KShimData::quoteArgs(vector<string> args) const
+KShim::string KShimData::quoteArgs(vector<KShim::string> args) const
 {
-    stringstream command;
+    KShim::stringstream command;
     for (const auto &arg : args) {
         command << " " << quote(arg);
     }

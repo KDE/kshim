@@ -40,67 +40,63 @@ using namespace std;
 
 extern char **environ;
 
-bool KShim::isAbs(const std::string &s)
+std::filesystem::path KShim::binaryName()
 {
-    return s.length() >= 1 && s[0] == KShim::dirSep();
-}
-
-string KShim::binaryName()
-{
-    size_t size;
+    static std::filesystem::path _path = []{
+        size_t size;
 #if __APPLE__
-    string out(PROC_PIDPATHINFO_MAXSIZE, 0);
-    size = proc_pidpath(getpid(), const_cast<char*>(out.data()), out.size());
+        string out(PROC_PIDPATHINFO_MAXSIZE, 0);
+        size = proc_pidpath(getpid(), const_cast<char*>(out.data()), out.size());
 #else
-    string out;
-    do {
-        out.resize(out.size() + 1024);
-        size = readlink("/proc/self/exe", const_cast<char*>(out.data()), out.size());
-    } while (out.size() == size);
+        string out;
+        do {
+            out.resize(out.size() + 1024);
+            size = readlink("/proc/self/exe", const_cast<char*>(out.data()), out.size());
+        } while (out.size() == size);
 #endif
-    if (size>0) {
-        out.resize(size);
-    } else {
-        cerr << "Failed to locate shimgen" << endl;
-        exit(1);
-    }
-    return out;
+        if (size>0) {
+            out.resize(size);
+        } else {
+            cerr << "Failed to locate shimgen" << endl;
+            exit(1);
+        }
+        return out;
+    }();
+    return _path;
 }
 
-int KShim::run(const KShimData &data, int argc, char *argv[])
+int KShim::run(const KShimData &data, const vector<KShim::string> &args)
 {
     for (auto var : data.env())
     {
         kLog << "setenv: " << var.first << "=" << var.second;
         setenv(var.first.c_str(), var.second.c_str(), true);
     }
-
-    int pos = 0;
-    const size_t size = static_cast<size_t>(argc) + data.args().size() + 1;
-    char **args = new char*[size];
-    auto addArg = [&pos, &args](const string &s)
+    const size_t size = args.size() + data.args().size() + 1;
+    vector<char*> arguments;
+    auto addArg = [&arguments](const string &s)
     {
-        args[pos] = new char[s.size()+1];
-        strcpy(args[pos++], s.c_str());
+        arguments.push_back(const_cast<char*>(s.data()));
     };
-    addArg(data.appAbs());
+    const auto app = data.appAbs().string();
+    addArg(app);
     for (const auto &s : data.args()) {
         addArg(s);
     }
-    for (int i = 1; i < argc; ++i) {
-        args[pos++] = argv[i];
+    for (const auto &s : args) {
+        addArg(s);
     }
-    args[pos] = nullptr;
+    //    args[pos] = nullptr;
     {
         auto log = kLog << "Command:";
         log << data.appAbs();
-        for (size_t i = 0; i < size - 1; ++i){
-            log << " " << args[i];
+        for (const char *s : arguments){
+            log << " " << s;
         }
     }
     pid_t pid;
     int status;
-    status = posix_spawn(&pid, data.appAbs().c_str(), NULL, NULL, args, environ);
+    status = posix_spawn(&pid, data.appAbs().string().data(), NULL, NULL, arguments.data(), environ);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
             return status;
@@ -111,4 +107,25 @@ int KShim::run(const KShimData &data, int argc, char *argv[])
         cerr << "KShim: posix_spawn: " << strerror(status) << endl;
     }
     return -1;
+}
+
+int main(int argc, char *argv[])
+{
+    std::vector<KShim::string> args;
+    args.resize(argc);
+    for(size_t i=0; i < argc; ++i)
+    {
+        args[i] = argv[i];
+    }
+    return KShim::main(args);
+}
+
+KShim::string KShim::getenv(const KShim::string &var)
+{
+    const char *env = ::getenv(var.data());
+    if (env)
+    {
+        return {env};
+    }
+    return {};
 }

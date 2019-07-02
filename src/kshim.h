@@ -27,55 +27,80 @@
 #define KSHIM_H
 
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <vector>
+#include <memory>
 
 class KShimData;
 
 
 namespace KShim
 {
-constexpr char dirSep() {
 #ifdef _WIN32
-    return '\\';
+#define KSTRING(X) L##X
+using string = std::wstring;
+using stringstream = std::wstringstream;
 #else
-    return  '/';
+#define KSTRING(X) X
+using string = std::string;
+using stringstream = std::stringstream;
 #endif
-}
-bool isAbs(const std::string &s);
-int run(const KShimData &data, int argc, char *argv[]);
-bool createShim(KShimData &shimData, const std::string &appName, const std::string &target, const std::vector<std::string> &args, const std::vector<std::string> &env);
-std::string binaryName();
+
+int run(const KShimData &data, const std::vector<string> &args);
+bool createShim(KShimData &shimData, const KShim::string &appName, const std::filesystem::path &target, const std::vector<KShim::string> &args, const std::vector<KShim::string> &env);
+std::filesystem::path binaryName();
+KShim::string getenv(const KShim::string &var);
+
+int main(const std::vector<string> &args);
 }
 
 class KLog
 {
 public:
-    KLog();
+    enum class Type
+    {
+        Debug,
+        Error
+    };
+    KLog(Type t);
+    KLog(const KLog &other);
     ~KLog();
 
-    KLog &log() {
+    KLog &log();
 
-      *this << "KShimgen: ";
-      return  *this;
-    }
+    Type type() const;
 
 private:
-    static bool s_doLog;
-    std::ofstream &out();
+    bool doLog() const;
+    Type m_type;
+    std::shared_ptr<KShim::stringstream> m_stream;
 
     template<typename T>
     friend KLog & operator<<(KLog &, const T&);
 };
-
-#define kLog KLog().log()
+#define kLog KLog(KLog::Type::Debug).log()
+#define kLog2(X) KLog(X).log()
 
 template <typename T>
 KLog &operator<< (KLog &log, const T &t) {
-    if (KLog::s_doLog) {
-        log.out() << t;
+    if (log.doLog()) {
+        *log.m_stream << t;
     }
     return log;
 }
+
+template <>
+inline KLog &operator<< (KLog &log, const std::filesystem::path &t) {
+#ifdef _WIN32
+    log << t.wstring();
+#else
+    log << t.string();
+#endif
+    return log;
+}
+
+
 #endif // KSHIM_H

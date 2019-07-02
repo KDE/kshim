@@ -26,28 +26,31 @@
 #ifndef KSHIMDATA_H
 #define KSHIMDATA_H
 
+#include "kshim.h"
+
 #include <string>
 #include <vector>
+#include <filesystem>
 
 class KShimData
 {
 public:
     KShimData();
 
-    std::string app() const;
-    std::string appAbs() const;
-    void setApp(const std::string &app);
+    std::filesystem::path app() const;
+    std::filesystem::path appAbs() const;
+    void setApp(const std::filesystem::path &app);
 
-    const std::vector<std::string> &args() const;
-    void setArgs(const std::vector<std::string> &args);
-    void addArg(const std::string &arg);
+    const std::vector<KShim::string> &args() const;
+    void setArgs(const std::vector<KShim::string> &args);
+    void addArg(const KShim::string &arg);
 
-    std::vector<std::pair<std::string, std::string>> env() const;
-    void setEnv(const std::vector<std::pair<std::string, std::string> > &env);
-    void addEnvVar(const std::pair<std::string, std::string> &var);
+    std::vector<std::pair<KShim::string, KShim::string>> env() const;
+    void setEnv(const std::vector<std::pair<KShim::string, KShim::string> > &env);
+    void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
 
-    std::string formatCommand(const std::vector<std::string> &args) const;
-    std::string formatArgs(const std::vector<std::string> &args) const;
+    KShim::string formatCommand(const std::vector<KShim::string> &args) const;
+    KShim::string formatArgs(const std::vector<KShim::string> &args) const;
 
     bool isShim() const;
     const std::vector<char> &rawData() const;
@@ -55,14 +58,14 @@ public:
     std::string toJson() const;
 
 private:
-    std::string quote(const std::string &arg) const;
-    std::string quoteArgs(std::vector<std::string> args) const;
-    std::string makeAbsouteCommand(const std::string &_path) const;
+    KShim::string quote(const KShim::string &arg) const;
+    KShim::string quoteArgs(std::vector<KShim::string> args) const;
+    std::filesystem::path makeAbsouteCommand(const std::filesystem::path &_path) const;
 
 
-    std::string m_app;
-    std::vector<std::string> m_args;
-    std::vector<std::pair<std::string, std::string>> m_env;
+    std::filesystem::path m_app;
+    std::vector<KShim::string> m_args;
+    std::vector<std::pair<KShim::string, KShim::string>> m_env;
     std::vector<char> m_rawData;
 
 };
