@@ -43,5 +43,11 @@ using path = std::filesystem::path;
 #else
 using path = KShimPath;
 #endif
+
+
+constexpr int version_major = @PROJECT_VERSION_MAJOR@;
+constexpr int version_minor = @PROJECT_VERSION_MINOR@;
+constexpr int version_patch = @PROJECT_VERSION_PATCH@;
+const KShim::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
 }
 #endif // CONFIG_H

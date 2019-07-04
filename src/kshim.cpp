@@ -209,7 +209,7 @@ KLog::~KLog()
 }
 
 KLog &KLog::log() {
-    *this << "KShimgen: ";
+    *this << "KShimgen " << KShim::version << ": ";
     return  *this;
 }
 
@@ -243,31 +243,50 @@ int KShim::main(const std::vector<KShim::string> &args)
         vector<KShim::string> arguments;
         vector<KShim::string> env;
 
-        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it) -> KShim::string {
+        auto help = [](const KShim::string &msg){
+            kLog2(KLog::Type::Error) << msg << "\n"
+                                     << "--create shim target\t\t\tCreate a shim\n"
+                                     << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+                                     << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+        };
+        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it, const KShim::string &helpText) -> KShim::string {
             if (it != args.cend()) {
                 return *it++;
             } else {
-                //                help(helpText);
+                help(helpText);
                 exit(1);
             }
         };
 
         auto it = args.cbegin() + 1;
         while (it != args.cend()) {
-            const auto arg = nextArg(it);
-            kLog << arg;
-
+            const auto arg = nextArg(it, KSTRING_LITERAL(""));
             if (arg == KSTRING_LITERAL("--create")){
-                app = nextArg(it);
-                target = nextArg(it);
+                const auto msg = KSTRING_LITERAL("--create shim target");
+                app = nextArg(it, msg);
+                target = nextArg(it, msg);
             }
-            else if (arg == KSTRING_LITERAL("env"))
+            else if (arg == KSTRING_LITERAL("--env"))
             {
-                env.push_back(nextArg(it));
+                env.push_back(nextArg(it, KSTRING_LITERAL("--env key=val")));
+            }
+            else if (arg == KSTRING_LITERAL("--"))
+            {
+                while(it != args.cend())
+                {
+                    arguments.push_back(nextArg(it, KSTRING_LITERAL("")));
+                }
+                break;
+            }
+            else if(arg == KSTRING_LITERAL("-h"))
+            {
+                help(KSTRING_LITERAL(""));
             }
             else
             {
-                arguments.push_back(arg);
+                KShim::stringstream str;
+                str << "Unknwon arg " << arg;
+                help(str.str());
             }
         }
         if (!target.empty())

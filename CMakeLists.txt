@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(KShim VERSION 0.1)
+project(KShim VERSION 0.2.0)
 
 
 set(FILESYSTEM_LIBS)
@@ -22,6 +22,15 @@ else()
     message(STATUS "Using minimal replacement for std::filesystem")
     #message(STATUS "${KSHIM_HAS_FILESYSTEM_LOG}")
     set (CMAKE_CXX_STANDARD 11)
+endif()
+
+#link runtime static
+if(MSVC)
+    foreach(_bt DEBUG RELEASE RELWITHDEBINFO)
+            string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
+    endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
+else()
+    set(CMAKE_EXE_LINKER_FLAGS ${MAKE_EXE_LINKER_FLAGS} -static )
 endif()
 
 
