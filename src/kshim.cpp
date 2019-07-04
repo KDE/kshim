@@ -183,9 +183,9 @@ KLog::~KLog()
                     const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
 #ifdef _WIN32
 #ifndef __MINGW32__
-    const auto &_name = logPath;
+                    const auto &_name = logPath;
 #else
-    const auto _name = logPath.string();
+                    const auto _name = logPath.string();
 #endif
                     auto out = std::wofstream(_name, std::wofstream::app);
 #else
@@ -193,7 +193,7 @@ KLog::~KLog()
 #endif
                     if (!out.is_open())
                     {
-                        kLog2(KLog::Type::Error) << "KShim: Failed to open log \"" << logPath << "\" " << strerror(errno);
+                        std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" " << strerror(errno) << std::endl;
                     }
                     out << "----------------------------\n";
                     return out;

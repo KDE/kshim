@@ -45,7 +45,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
     std::vector<KShim::string> args;
-    args.resize(argc);
+    args.resize(static_cast<size_t>(argc));
     for(size_t i=0; i < static_cast<size_t>(argc); ++i)
     {
         args[i] = argv[i];

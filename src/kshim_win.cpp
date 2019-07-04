@@ -66,7 +66,7 @@ int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
     {
         const auto error = GetLastError();
         kLog2(KLog::Type::Error) << "Failed to start target" << error;
-        return error;
+        return static_cast<int>(error);
     }
     WaitForSingleObject(pInfo.hProcess, INFINITE);
     DWORD exitCode;
