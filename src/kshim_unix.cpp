@@ -71,9 +71,8 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
         kLog << "setenv: " << var.first << "=" << var.second;
         setenv(var.first.c_str(), var.second.c_str(), true);
     }
-    const size_t size = args.size() + data.args().size() + 1;
     vector<char *> arguments;
-    auto addArg = [&arguments](const string &s) {
+    auto addArg = [&arguments](const KShim::string &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
     const auto app = data.appAbs().string();
@@ -84,6 +83,9 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
     for (const auto &s : args) {
         addArg(s);
     }
+    // the args need to end with a null pointer
+    arguments.push_back(nullptr);
+
     {
         auto log = kLog << "Command:";
         log << data.appAbs();
@@ -92,9 +94,7 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
         }
     }
     pid_t pid;
-    int status;
-    status =
-            posix_spawn(&pid, data.appAbs().string().data(), NULL, NULL, arguments.data(), environ);
+    int status = posix_spawn(&pid, app.data(), NULL, NULL, arguments.data(), environ);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
             return status;

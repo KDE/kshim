@@ -5,7 +5,7 @@ import os
 
 
 srcDir = os.path.dirname(__file__)
-includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["args", "nlohmann"]]
+includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["nlohmann"]]
 srcFiles = ["kshimdata.cpp", "kshim.cpp", "kshimpath.cpp"]
 
 if os.name == 'nt':
