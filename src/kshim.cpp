@@ -24,7 +24,7 @@
 */
 
 #include "kshim.h"
-
+#include "kshimpath.h"
 #include "kshimdata.h"
 
 #include <algorithm>
@@ -43,11 +43,11 @@ using namespace std;
 
 namespace  {
 
-std::filesystem::path normaliseApplicationName(const std::filesystem::path &app)
+KShim::path normaliseApplicationName(const KShim::path &app)
 {
 #ifdef _WIN32
-    std::filesystem::path out = app;
-    out.replace_extension(".exe");
+    KShim::path out = app;
+    out.replace_extension(KSTRING_LITERAL(".exe"));
     return out;
 #else
     return app;
@@ -57,10 +57,15 @@ std::filesystem::path normaliseApplicationName(const std::filesystem::path &app)
 vector<char> readBinary()
 {
     const auto name = KShim::binaryName();
-    ifstream me;
-    me.open(name, ios::in | ios::binary);
+
+#ifndef __MINGW32__
+    const auto &_name = name;
+#else
+    const auto _name = name.string();
+#endif
+    ifstream me(_name, ios::in | ios::binary);
     if (!me.is_open()) {
-        cerr << "Failed to open: " << name << endl;
+        kLog2(KLog::Type::Error) << "Failed to open: " << name;
         return {};
     }
 
@@ -77,7 +82,7 @@ vector<char> readBinary()
 
 
 
-bool writeBinary(const std::filesystem::path &name, const KShimData &shimData, const vector<char> &binary)
+bool writeBinary(const KShim::path &name, const KShimData &shimData, const vector<char> &binary)
 {
     vector<char> dataOut = binary;
 
@@ -89,8 +94,12 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData, c
         exit(1);
     }
 
-    ofstream out;
-    out.open(name, ios::out | ios::binary);
+#ifndef __MINGW32__
+    const auto &_name = name;
+#else
+    const auto _name = name.string();
+#endif
+    ofstream out(_name, ios::out | ios::binary);
     if (!out.is_open()) {
         kLog2(KLog::Type::Error) << "Failed to open out: " << name;
         return false;
@@ -112,7 +121,7 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData, c
 }
 }
 
-bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const filesystem::path &target, const vector<KShim::string> &args,  const vector<KShim::string> &_env)
+bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target, const vector<KShim::string> &args,  const vector<KShim::string> &_env)
 {
     vector<pair<KShim::string,KShim::string>> env;
     env.reserve(_env.size());
@@ -132,6 +141,8 @@ bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const 
     return false;
 }
 
+bool KLog::s_loggingEnabled = !KShim::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty();
+
 KLog::KLog(KLog::Type t)
     : m_type(t)
     , m_stream(new KShim::stringstream)
@@ -147,7 +158,7 @@ KLog::KLog(const KLog &other)
 
 KLog::~KLog()
 {
-    if (m_stream.unique())
+    if (m_stream.use_count() == 1)
     {
         *this << "\n";
         const auto line = m_stream->str();
@@ -164,20 +175,25 @@ KLog::~KLog()
             if (doLog())
             {
                 static auto _log = []{
-                    auto home = KShim::getenv(KSTRING("HOME"));
+                    auto home = KShim::getenv(KSTRING_LITERAL("HOME"));
                     if (home.empty())
                     {
-                        home = KShim::getenv(KSTRING("USERPROFILE"));
+                        home = KShim::getenv(KSTRING_LITERAL("USERPROFILE"));
                     }
-                    const auto logPath = std::filesystem::path(home) / KSTRING(".kshim.log");
+                    const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
 #ifdef _WIN32
-                    auto out = std::wofstream(logPath, std::wofstream::app);
+#ifndef __MINGW32__
+    const auto &_name = logPath;
+#else
+    const auto _name = logPath.string();
+#endif
+                    auto out = std::wofstream(_name, std::wofstream::app);
 #else
                     auto out = std::ofstream(logPath, std::wofstream::app);
 #endif
                     if (!out.is_open())
                     {
-                        cerr << "KShim: Failed to open log \"" << logPath.string() << "\" " << strerror(errno) << endl;
+                        kLog2(KLog::Type::Error) << "KShim: Failed to open log \"" << logPath << "\" " << strerror(errno);
                     }
                     out << "----------------------------\n";
                     return out;
@@ -202,10 +218,20 @@ KLog::Type KLog::type() const
     return m_type;
 }
 
+
 bool KLog::doLog() const
 {
-    static bool _do_log = !KShim::getenv(KSTRING("KSHIM_LOG")).empty();
-    return _do_log || m_type != KLog::Type::Debug;
+    return loggingEnabled() || m_type != KLog::Type::Debug;
+}
+
+bool KLog::loggingEnabled()
+{
+    return s_loggingEnabled;
+}
+
+void KLog::setLoggingEnabled(bool loggingEnabled)
+{
+    s_loggingEnabled = loggingEnabled;
 }
 
 int KShim::main(const std::vector<KShim::string> &args)
@@ -217,7 +243,7 @@ int KShim::main(const std::vector<KShim::string> &args)
         vector<KShim::string> arguments;
         vector<KShim::string> env;
 
-        auto nextArg = [&](auto &it) -> KShim::string {
+        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it) -> KShim::string {
             if (it != args.cend()) {
                 return *it++;
             } else {
@@ -226,16 +252,16 @@ int KShim::main(const std::vector<KShim::string> &args)
             }
         };
 
-        auto it = args.begin() + 1;
-        while (it != args.end()) {
+        auto it = args.cbegin() + 1;
+        while (it != args.cend()) {
             const auto arg = nextArg(it);
             kLog << arg;
 
-            if (arg == KSTRING("--create")){
+            if (arg == KSTRING_LITERAL("--create")){
                 app = nextArg(it);
                 target = nextArg(it);
             }
-            else if (KSTRING("env") )
+            else if (arg == KSTRING_LITERAL("env"))
             {
                 env.push_back(nextArg(it));
             }
@@ -257,4 +283,17 @@ int KShim::main(const std::vector<KShim::string> &args)
     return -1;
 }
 
+KLog &operator<< (KLog &log, const KShim::path &t) {
+#ifdef _WIN32
+    log << t.wstring();
+#else
+    log << t.string();
+#endif
+    return log;
+}
 
+KLog &operator<<(KLog &log, const string &t)
+{
+    log << t.data();
+    return log;
+}

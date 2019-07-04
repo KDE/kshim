@@ -27,23 +27,23 @@
 #include "kshimdata.h"
 
 #include <windows.h>
-#include <shellapi.h>
+#include <algorithm>
 
 using namespace std;
 
-std::filesystem::path KShim::binaryName()
+KShim::path KShim::binaryName()
 {
-    static const std::filesystem::path path = [] {
-            std::wstring buf;
-            size_t size;
-            do {
-                buf.resize(buf.size() + 1024);
-                size = GetModuleFileNameW(nullptr, buf.data(),
-                                          static_cast<DWORD>(buf.size()));
-            } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
-            buf.resize(size);
-            return buf;
-        }();
+    static const KShim::path path = [] {
+        std::wstring buf;
+        size_t size;
+        do {
+            buf.resize(buf.size() + 1024);
+            size = GetModuleFileNameW(nullptr, const_cast<wchar_t*>(buf.data()),
+                                      static_cast<DWORD>(buf.size()));
+        } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+        buf.resize(size);
+        return buf;
+    }();
     return path;
 }
 
@@ -77,37 +77,15 @@ int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
     return static_cast<int>(exitCode);
 }
 
-int WINAPI wWinMain(HINSTANCE, HINSTANCE, wchar_t *, int)
-{
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        FILE *dummy;
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
-        setvbuf(stdout, nullptr, _IONBF, 0);
-
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
-        setvbuf(stderr, nullptr, _IONBF, 0);
-        std::ios::sync_with_stdio();
-    }
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-
-    std::vector<KShim::string> args;
-    args.resize(argc);
-    for(size_t i=0; i < argc; ++i)
-    {
-        args[i] = argv[i];
-    }
-
-    return KShim::main(args);
-}
-
-
 KShim::string KShim::getenv(const KShim::string &var)
 {
     const auto size = GetEnvironmentVariableW(var.data(), nullptr, 0);
+    if (!size)
+    {
+        return {};
+    }
     KShim::string out(size, 0);
-    GetEnvironmentVariableW(var.data(), out.data(), size);
-    out.resize(wcslen(out.data()));
+    GetEnvironmentVariableW(var.data(), const_cast<wchar_t*>(out.data()), size);
+    out.resize(size - 1);
     return out;
 }

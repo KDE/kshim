@@ -23,52 +23,33 @@
     SUCH DAMAGE.
 */
 
-#ifndef KSHIMDATA_H
-#define KSHIMDATA_H
-
 #include "kshim.h"
-#include "kshimpath.h"
 
-#include <string>
-#include <vector>
-#include <filesystem>
+#include <windows.h>
+#include <shellapi.h>
 
-class KShimData
+
+int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
 {
-public:
-    KShimData();
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        FILE *dummy;
+        _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
+        setvbuf(stdout, nullptr, _IONBF, 0);
 
-    KShim::path app() const;
-    KShim::path appAbs() const;
-    void setApp(const KShim::path &app);
+        _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
+        setvbuf(stderr, nullptr, _IONBF, 0);
+        std::ios::sync_with_stdio();
+    }
+    const auto commandLine = GetCommandLineW();
+    int argc;
+    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
-    const std::vector<KShim::string> &args() const;
-    void setArgs(const std::vector<KShim::string> &args);
-    void addArg(const KShim::string &arg);
+    std::vector<KShim::string> args;
+    args.resize(argc);
+    for(size_t i=0; i < static_cast<size_t>(argc); ++i)
+    {
+        args[i] = argv[i];
+    }
 
-    std::vector<std::pair<KShim::string, KShim::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShim::string, KShim::string> > &env);
-    void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
-
-    KShim::string formatCommand(const std::vector<KShim::string> &args) const;
-    KShim::string formatArgs(const std::vector<KShim::string> &args) const;
-
-    bool isShim() const;
-    const std::vector<char> &rawData() const;
-
-    std::string toJson() const;
-
-private:
-    KShim::string quote(const KShim::string &arg) const;
-    KShim::string quoteArgs(std::vector<KShim::string> args) const;
-    KShim::path makeAbsouteCommand(const KShim::path &_path) const;
-
-
-    KShim::path m_app;
-    std::vector<KShim::string> m_args;
-    std::vector<std::pair<KShim::string, KShim::string>> m_env;
-    std::vector<char> m_rawData;
-
-};
-
-#endif // KSHIMDATA_H
+    return KShim::main(args);
+}

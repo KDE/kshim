@@ -65,17 +65,17 @@ KShimData::KShimData()
     }
 }
 
-std::filesystem::path KShimData::app() const
+KShim::path KShimData::app() const
 {
     return m_app;
 }
 
-std::filesystem::path KShimData::appAbs() const
+KShim::path KShimData::appAbs() const
 {
     return makeAbsouteCommand(app());
 }
 
-void KShimData::setApp(const std::filesystem::path &app)
+void KShimData::setApp(const KShim::path &app)
 {
     m_app = app;
 }
@@ -137,7 +137,7 @@ bool KShimData::isShim() const
 }
 
 
-std::filesystem::path KShimData::makeAbsouteCommand(const std::filesystem::path &path) const
+KShim::path KShimData::makeAbsouteCommand(const KShim::path &path) const
 {
     if(path.is_absolute()) {
         return path;

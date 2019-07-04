@@ -23,52 +23,40 @@
     SUCH DAMAGE.
 */
 
-#ifndef KSHIMDATA_H
-#define KSHIMDATA_H
+#ifndef KSHIMPATH_H
+#define KSHIMPATH_H
 
-#include "kshim.h"
-#include "kshimpath.h"
+#include "kshimstring.h"
 
-#include <string>
-#include <vector>
-#include <filesystem>
-
-class KShimData
+class KShimPath
 {
 public:
-    KShimData();
+    KShimPath();
+    KShimPath(const KShim::string &path);
+    KShimPath(const KShimPath &path);
 
-    KShim::path app() const;
-    KShim::path appAbs() const;
-    void setApp(const KShim::path &app);
+    bool is_absolute() const;
 
-    const std::vector<KShim::string> &args() const;
-    void setArgs(const std::vector<KShim::string> &args);
-    void addArg(const KShim::string &arg);
+    KShimPath &replace_extension(const KShimPath &path);
+    KShimPath parent_path() const;
 
-    std::vector<std::pair<KShim::string, KShim::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShim::string, KShim::string> > &env);
-    void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
+#ifdef _WIN32
+    std::wstring wstring() const;
+#endif
 
-    KShim::string formatCommand(const std::vector<KShim::string> &args) const;
-    KShim::string formatArgs(const std::vector<KShim::string> &args) const;
+    std::string string() const;
 
-    bool isShim() const;
-    const std::vector<char> &rawData() const;
-
-    std::string toJson() const;
+    operator KShim::string() const;
 
 private:
-    KShim::string quote(const KShim::string &arg) const;
-    KShim::string quoteArgs(std::vector<KShim::string> args) const;
-    KShim::path makeAbsouteCommand(const KShim::path &_path) const;
+    KShim::string m_path;
 
-
-    KShim::path m_app;
-    std::vector<KShim::string> m_args;
-    std::vector<std::pair<KShim::string, KShim::string>> m_env;
-    std::vector<char> m_rawData;
-
+    friend KShimPath operator /(const KShimPath &lhs, const KShimPath &rhs);
+    friend bool operator ==(const KShimPath &lhs, const KShimPath &rhs);
 };
 
-#endif // KSHIMDATA_H
+KShimPath operator /(const KShimPath &lhs, const KShimPath &rhs);
+bool operator ==(const KShimPath &lhs, const KShimPath &rhs);
+
+
+#endif // KSHIMPATH_H

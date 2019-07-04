@@ -40,9 +40,9 @@ using namespace std;
 
 extern char **environ;
 
-std::filesystem::path KShim::binaryName()
+KShim::path KShim::binaryName()
 {
-    static std::filesystem::path _path = []{
+    static KShim::path _path = []{
         size_t size;
 #if __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
@@ -86,7 +86,6 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
     for (const auto &s : args) {
         addArg(s);
     }
-    //    args[pos] = nullptr;
     {
         auto log = kLog << "Command:";
         log << data.appAbs();
@@ -107,17 +106,6 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
         cerr << "KShim: posix_spawn: " << strerror(status) << endl;
     }
     return -1;
-}
-
-int main(int argc, char *argv[])
-{
-    std::vector<KShim::string> args;
-    args.resize(argc);
-    for(size_t i=0; i < argc; ++i)
-    {
-        args[i] = argv[i];
-    }
-    return KShim::main(args);
 }
 
 KShim::string KShim::getenv(const KShim::string &var)

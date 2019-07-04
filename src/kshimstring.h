@@ -23,52 +23,25 @@
     SUCH DAMAGE.
 */
 
-#ifndef KSHIMDATA_H
-#define KSHIMDATA_H
+#ifndef KSHIMSTRING_H
+#define KSHIMSTRING_H
 
-#include "kshim.h"
-#include "kshimpath.h"
 
 #include <string>
-#include <vector>
-#include <filesystem>
 
-class KShimData
+namespace KShim
 {
-public:
-    KShimData();
+#ifdef _WIN32
+#define KSTRING(X) L##X
+using string = std::wstring;
+using stringstream = std::wstringstream;
+#else
+#define KSTRING(X) X
+using string = std::string;
+using stringstream = std::stringstream;
+#endif
 
-    KShim::path app() const;
-    KShim::path appAbs() const;
-    void setApp(const KShim::path &app);
+#define KSTRING_LITERAL(X) []{ static const KShim::string _s = KSTRING(X); return _s;}()
 
-    const std::vector<KShim::string> &args() const;
-    void setArgs(const std::vector<KShim::string> &args);
-    void addArg(const KShim::string &arg);
-
-    std::vector<std::pair<KShim::string, KShim::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShim::string, KShim::string> > &env);
-    void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
-
-    KShim::string formatCommand(const std::vector<KShim::string> &args) const;
-    KShim::string formatArgs(const std::vector<KShim::string> &args) const;
-
-    bool isShim() const;
-    const std::vector<char> &rawData() const;
-
-    std::string toJson() const;
-
-private:
-    KShim::string quote(const KShim::string &arg) const;
-    KShim::string quoteArgs(std::vector<KShim::string> args) const;
-    KShim::path makeAbsouteCommand(const KShim::path &_path) const;
-
-
-    KShim::path m_app;
-    std::vector<KShim::string> m_args;
-    std::vector<std::pair<KShim::string, KShim::string>> m_env;
-    std::vector<char> m_rawData;
-
-};
-
-#endif // KSHIMDATA_H
+}
+#endif // KSHIMSTRING_H

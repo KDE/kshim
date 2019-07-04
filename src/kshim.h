@@ -26,6 +26,8 @@
 #ifndef KSHIM_H
 #define KSHIM_H
 
+#include "config.h"
+
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -36,22 +38,11 @@
 
 class KShimData;
 
-
 namespace KShim
 {
-#ifdef _WIN32
-#define KSTRING(X) L##X
-using string = std::wstring;
-using stringstream = std::wstringstream;
-#else
-#define KSTRING(X) X
-using string = std::string;
-using stringstream = std::stringstream;
-#endif
-
 int run(const KShimData &data, const std::vector<string> &args);
-bool createShim(KShimData &shimData, const KShim::string &appName, const std::filesystem::path &target, const std::vector<KShim::string> &args, const std::vector<KShim::string> &env);
-std::filesystem::path binaryName();
+bool createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target, const std::vector<KShim::string> &args, const std::vector<KShim::string> &env);
+KShim::path binaryName();
 KShim::string getenv(const KShim::string &var);
 
 int main(const std::vector<string> &args);
@@ -73,16 +64,28 @@ public:
 
     Type type() const;
 
+    static bool loggingEnabled();
+    static void setLoggingEnabled(bool loggingEnabled);
+
 private:
     bool doLog() const;
     Type m_type;
     std::shared_ptr<KShim::stringstream> m_stream;
 
+    static bool s_loggingEnabled;
+
+    friend KLog &operator<< (KLog &log, const KShim::path &t);
+    friend KLog &operator<< (KLog &log, const std::string &t);
+
     template<typename T>
     friend KLog & operator<<(KLog &, const T&);
+
 };
 #define kLog KLog(KLog::Type::Debug).log()
 #define kLog2(X) KLog(X).log()
+
+KLog &operator<< (KLog &log, const KShim::path &t);
+KLog &operator<< (KLog &log, const std::string &t);
 
 template <typename T>
 KLog &operator<< (KLog &log, const T &t) {
@@ -91,16 +94,5 @@ KLog &operator<< (KLog &log, const T &t) {
     }
     return log;
 }
-
-template <>
-inline KLog &operator<< (KLog &log, const std::filesystem::path &t) {
-#ifdef _WIN32
-    log << t.wstring();
-#else
-    log << t.string();
-#endif
-    return log;
-}
-
 
 #endif // KSHIM_H
