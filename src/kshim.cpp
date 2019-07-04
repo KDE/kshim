@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace  {
+namespace {
 
 KShim::path normaliseApplicationName(const KShim::path &app)
 {
@@ -69,9 +69,9 @@ vector<char> readBinary()
         return {};
     }
 
-    me.seekg (0, me.end);
+    me.seekg(0, me.end);
     size_t size = static_cast<size_t>(me.tellg());
-    me.seekg (0, me.beg);
+    me.seekg(0, me.beg);
 
     vector<char> buf(size);
     me.read(buf.data(), static_cast<streamsize>(size));
@@ -79,8 +79,6 @@ vector<char> readBinary()
     kLog << "Read: " << name << " " << size << " bytes";
     return buf;
 }
-
-
 
 bool writeBinary(const KShim::path &name, const KShimData &shimData, const vector<char> &binary)
 {
@@ -106,7 +104,9 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
     }
     const std::string json = shimData.toJson();
     if (json.size() > rawData.size()) {
-        kLog2(KLog::Type::Error) << "Data buffer is too small " << json.size() << " > " << rawData.size() << " :\n" << json.data();
+        kLog2(KLog::Type::Error) << "Data buffer is too small " << json.size() << " > "
+                                 << rawData.size() << " :\n"
+                                 << json.data();
         return false;
     }
     copy(json.cbegin(), json.cend(), cmdIt);
@@ -115,20 +115,20 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
     out.close();
 
 #ifndef _WIN32
-    chmod(name.string().data(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
     return true;
 }
 }
 
-bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target, const vector<KShim::string> &args,  const vector<KShim::string> &_env)
+bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target,
+                       const vector<KShim::string> &args, const vector<KShim::string> &_env)
 {
-    vector<pair<KShim::string,KShim::string>> env;
+    vector<pair<KShim::string, KShim::string>> env;
     env.reserve(_env.size());
-    for (const auto &e : _env)
-    {
+    for (const auto &e : _env) {
         const auto pos = e.find('=');
-        env.push_back({e.substr(0, pos), e.substr(pos + 1)});
+        env.push_back({ e.substr(0, pos), e.substr(pos + 1) });
     }
     const auto outApp = normaliseApplicationName(appName);
     shimData.setApp(target);
@@ -143,41 +143,27 @@ bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const 
 
 bool KLog::s_loggingEnabled = !KShim::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty();
 
-KLog::KLog(KLog::Type t)
-    : m_type(t)
-    , m_stream(new KShim::stringstream)
-{
-}
+KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShim::stringstream) {}
 
-KLog::KLog(const KLog &other)
-    : m_type(other.m_type)
-    , m_stream(m_stream)
-{
-
-}
+KLog::KLog(const KLog &other) : m_type(other.m_type), m_stream(m_stream) {}
 
 KLog::~KLog()
 {
-    if (m_stream.use_count() == 1)
-    {
+    if (m_stream.use_count() == 1) {
         *this << "\n";
         const auto line = m_stream->str();
-        switch(m_type)
-        {
+        switch (m_type) {
         case KLog::Type::Error:
 #ifdef _WIN32
             std::wcerr << line;
 #else
             std::cerr << line;
 #endif
-        case KLog::Type::Debug:
-        {
-            if (doLog())
-            {
-                static auto _log = []{
+        case KLog::Type::Debug: {
+            if (doLog()) {
+                static auto _log = [] {
                     auto home = KShim::getenv(KSTRING_LITERAL("HOME"));
-                    if (home.empty())
-                    {
+                    if (home.empty()) {
                         home = KShim::getenv(KSTRING_LITERAL("USERPROFILE"));
                     }
                     const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
@@ -191,9 +177,9 @@ KLog::~KLog()
 #else
                     auto out = std::ofstream(logPath, std::wofstream::app);
 #endif
-                    if (!out.is_open())
-                    {
-                        std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" " << strerror(errno) << std::endl;
+                    if (!out.is_open()) {
+                        std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" "
+                                  << strerror(errno) << std::endl;
                     }
                     out << "----------------------------\n";
                     return out;
@@ -201,23 +187,23 @@ KLog::~KLog()
 #ifdef _WIN32
                 OutputDebugStringW(line.data());
 #endif
-                _log <<  line;
+                _log << line;
             }
         }
         }
     }
 }
 
-KLog &KLog::log() {
+KLog &KLog::log()
+{
     *this << "KShimgen " << KShim::version << ": ";
-    return  *this;
+    return *this;
 }
 
 KLog::Type KLog::type() const
 {
     return m_type;
 }
-
 
 bool KLog::doLog() const
 {
@@ -243,13 +229,15 @@ int KShim::main(const std::vector<KShim::string> &args)
         vector<KShim::string> arguments;
         vector<KShim::string> env;
 
-        auto help = [](const KShim::string &msg){
-            kLog2(KLog::Type::Error) << msg << "\n"
-                                     << "--create shim target\t\t\tCreate a shim\n"
-                                     << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
-                                     << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+        auto help = [](const KShim::string &msg) {
+            kLog2(KLog::Type::Error)
+                    << msg << "\n"
+                    << "--create shim target\t\t\tCreate a shim\n"
+                    << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+                    << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
         };
-        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it, const KShim::string &helpText) -> KShim::string {
+        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it,
+                           const KShim::string &helpText) -> KShim::string {
             if (it != args.cend()) {
                 return *it++;
             } else {
@@ -261,40 +249,30 @@ int KShim::main(const std::vector<KShim::string> &args)
         auto it = args.cbegin() + 1;
         while (it != args.cend()) {
             const auto arg = nextArg(it, KSTRING_LITERAL(""));
-            if (arg == KSTRING_LITERAL("--create")){
+            if (arg == KSTRING_LITERAL("--create")) {
                 const auto msg = KSTRING_LITERAL("--create shim target");
                 app = nextArg(it, msg);
                 target = nextArg(it, msg);
-            }
-            else if (arg == KSTRING_LITERAL("--env"))
-            {
+            } else if (arg == KSTRING_LITERAL("--env")) {
                 env.push_back(nextArg(it, KSTRING_LITERAL("--env key=val")));
-            }
-            else if (arg == KSTRING_LITERAL("--"))
-            {
-                while(it != args.cend())
-                {
+            } else if (arg == KSTRING_LITERAL("--")) {
+                while (it != args.cend()) {
                     arguments.push_back(nextArg(it, KSTRING_LITERAL("")));
                 }
                 break;
-            }
-            else if(arg == KSTRING_LITERAL("-h"))
-            {
+            } else if (arg == KSTRING_LITERAL("-h")) {
                 help(KSTRING_LITERAL(""));
-            }
-            else
-            {
+            } else {
                 KShim::stringstream str;
                 str << "Unknwon arg " << arg;
                 help(str.str());
             }
         }
-        if (!target.empty())
-        {
+        if (!target.empty()) {
             return KShim::createShim(data, app, target, arguments, env) ? 0 : -1;
         }
     } else {
-        const auto tmp = std::vector<KShim::string>(args.cbegin()+1, args.cend());
+        const auto tmp = std::vector<KShim::string>(args.cbegin() + 1, args.cend());
         int out = KShim::run(data, tmp);
         kLog << "Exit: " << out;
         return out;
@@ -302,7 +280,8 @@ int KShim::main(const std::vector<KShim::string> &args)
     return -1;
 }
 
-KLog &operator<< (KLog &log, const KShim::path &t) {
+KLog &operator<<(KLog &log, const KShim::path &t)
+{
 #ifdef _WIN32
     log << t.wstring();
 #else

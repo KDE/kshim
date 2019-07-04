@@ -38,7 +38,7 @@ KShim::path KShim::binaryName()
         size_t size;
         do {
             buf.resize(buf.size() + 1024);
-            size = GetModuleFileNameW(nullptr, const_cast<wchar_t*>(buf.data()),
+            size = GetModuleFileNameW(nullptr, const_cast<wchar_t *>(buf.data()),
                                       static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
         buf.resize(size);
@@ -49,21 +49,22 @@ KShim::path KShim::binaryName()
 
 int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
 {
-    for (auto var : data.env())
-    {
+    for (auto var : data.env()) {
         kLog << "SetEnvironmentVariable: " << var.first << "=" << var.second;
         SetEnvironmentVariableW(var.first.data(), var.second.data());
     }
     // TODO: pass environment
     STARTUPINFOW info = {};
-    info.cb = sizeof (info);
+    info.cb = sizeof(info);
     PROCESS_INFORMATION pInfo = {};
     const auto arguments = data.formatCommand(args);
     kLog << data.appAbs() << " " << arguments;
     kLog << "CommandLength: " << arguments.size();
 
-    if(!CreateProcessW(data.appAbs().wstring().c_str(), const_cast<wchar_t*>(arguments.c_str()), nullptr, nullptr, true, INHERIT_PARENT_AFFINITY | CREATE_UNICODE_ENVIRONMENT, nullptr, nullptr, &info, &pInfo))
-    {
+    if (!CreateProcessW(data.appAbs().wstring().c_str(), const_cast<wchar_t *>(arguments.c_str()),
+                        nullptr, nullptr, true,
+                        INHERIT_PARENT_AFFINITY | CREATE_UNICODE_ENVIRONMENT, nullptr, nullptr,
+                        &info, &pInfo)) {
         const auto error = GetLastError();
         kLog2(KLog::Type::Error) << "Failed to start target" << error;
         return static_cast<int>(error);
@@ -80,12 +81,11 @@ int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
 KShim::string KShim::getenv(const KShim::string &var)
 {
     const auto size = GetEnvironmentVariableW(var.data(), nullptr, 0);
-    if (!size)
-    {
+    if (!size) {
         return {};
     }
     KShim::string out(size, 0);
-    GetEnvironmentVariableW(var.data(), const_cast<wchar_t*>(out.data()), size);
+    GetEnvironmentVariableW(var.data(), const_cast<wchar_t *>(out.data()), size);
     out.resize(size - 1);
     return out;
 }

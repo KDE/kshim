@@ -1,6 +1,6 @@
 #include "kshim.h"
 
- #include <assert.h>
+#include <assert.h>
 
 int main()
 {
@@ -17,8 +17,9 @@ int main()
     kLog << exe.replace_extension(KSTRING_LITERAL(".exe"));
     assert(exe == KShim::path(KSTRING_LITERAL("/foo/bar.exe")));
 #ifdef _WIN32
-    assert(KShim::path(KSTRING_LITERAL("C:/foo/bar.exe")) == KShim::path(KSTRING_LITERAL("C:\\foo\\bar.exe")));
-    kLog <<  "wstring " << path.wstring();
+    assert(KShim::path(KSTRING_LITERAL("C:/foo/bar.exe"))
+           == KShim::path(KSTRING_LITERAL("C:\\foo\\bar.exe")));
+    kLog << "wstring " << path.wstring();
 #endif
     kLog << "string " << path.string();
     return 0;

@@ -51,12 +51,11 @@ public:
 private:
     KShim::string m_path;
 
-    friend KShimPath operator /(const KShimPath &lhs, const KShimPath &rhs);
-    friend bool operator ==(const KShimPath &lhs, const KShimPath &rhs);
+    friend KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
+    friend bool operator==(const KShimPath &lhs, const KShimPath &rhs);
 };
 
-KShimPath operator /(const KShimPath &lhs, const KShimPath &rhs);
-bool operator ==(const KShimPath &lhs, const KShimPath &rhs);
-
+KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
+bool operator==(const KShimPath &lhs, const KShimPath &rhs);
 
 #endif // KSHIMPATH_H

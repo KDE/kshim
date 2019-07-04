@@ -42,19 +42,19 @@ extern char **environ;
 
 KShim::path KShim::binaryName()
 {
-    static KShim::path _path = []{
+    static KShim::path _path = [] {
         size_t size;
 #if __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
-        size = proc_pidpath(getpid(), const_cast<char*>(out.data()), out.size());
+        size = proc_pidpath(getpid(), const_cast<char *>(out.data()), out.size());
 #else
         string out;
         do {
             out.resize(out.size() + 1024);
-            size = readlink("/proc/self/exe", const_cast<char*>(out.data()), out.size());
+            size = readlink("/proc/self/exe", const_cast<char *>(out.data()), out.size());
         } while (out.size() == size);
 #endif
-        if (size>0) {
+        if (size > 0) {
             out.resize(size);
         } else {
             cerr << "Failed to locate shimgen" << endl;
@@ -67,16 +67,14 @@ KShim::path KShim::binaryName()
 
 int KShim::run(const KShimData &data, const vector<KShim::string> &args)
 {
-    for (auto var : data.env())
-    {
+    for (auto var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
         setenv(var.first.c_str(), var.second.c_str(), true);
     }
     const size_t size = args.size() + data.args().size() + 1;
-    vector<char*> arguments;
-    auto addArg = [&arguments](const string &s)
-    {
-        arguments.push_back(const_cast<char*>(s.data()));
+    vector<char *> arguments;
+    auto addArg = [&arguments](const string &s) {
+        arguments.push_back(const_cast<char *>(s.data()));
     };
     const auto app = data.appAbs().string();
     addArg(app);
@@ -89,13 +87,14 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
     {
         auto log = kLog << "Command:";
         log << data.appAbs();
-        for (const char *s : arguments){
+        for (const char *s : arguments) {
             log << " " << s;
         }
     }
     pid_t pid;
     int status;
-    status = posix_spawn(&pid, data.appAbs().string().data(), NULL, NULL, arguments.data(), environ);
+    status =
+            posix_spawn(&pid, data.appAbs().string().data(), NULL, NULL, arguments.data(), environ);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
             return status;
@@ -111,9 +110,8 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
 KShim::string KShim::getenv(const KShim::string &var)
 {
     const char *env = ::getenv(var.data());
-    if (env)
-    {
-        return {env};
+    if (env) {
+        return { env };
     }
     return {};
 }

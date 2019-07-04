@@ -32,24 +32,16 @@
 #include <codecvt>
 #endif
 
-KShimPath::KShimPath()
-{
+KShimPath::KShimPath() {}
 
-}
-
-KShimPath::KShimPath(const KShim::string &path)
-    : m_path(path)
+KShimPath::KShimPath(const KShim::string &path) : m_path(path)
 {
 #ifdef _WIN32
-     std::replace(m_path.begin(), m_path.end(), '\\', '/');
+    std::replace(m_path.begin(), m_path.end(), '\\', '/');
 #endif
 }
 
-KShimPath::KShimPath(const KShimPath &path)
-    : m_path(path.m_path)
-{
-
-}
+KShimPath::KShimPath(const KShimPath &path) : m_path(path.m_path) {}
 
 bool KShimPath::is_absolute() const
 {
@@ -62,15 +54,11 @@ bool KShimPath::is_absolute() const
 
 KShimPath &KShimPath::replace_extension(const KShimPath &path)
 {
-    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it)
-    {
+    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it) {
         const auto c = *it;
-        if (c == '/')
-        {
+        if (c == '/') {
             break;
-        }
-        else if (c == '.')
-        {
+        } else if (c == '.') {
             const size_t pos = &*it - m_path.data();
             m_path.erase(pos, m_path.size());
             break;
@@ -82,11 +70,9 @@ KShimPath &KShimPath::replace_extension(const KShimPath &path)
 
 KShimPath KShimPath::parent_path() const
 {
-    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it)
-    {
+    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it) {
         const auto c = *it;
-        if (c == '/')
-        {
+        if (c == '/') {
             const size_t pos = &*it - m_path.data();
             auto out = *this;
             out.m_path.erase(pos);
@@ -110,11 +96,11 @@ std::string KShimPath::string() const
     size_t size;
     wcstombs_s(&size, nullptr, 0, _w.data(), _w.size());
     std::string out(size, 0);
-    wcstombs_s(&size, const_cast<char*>(out.data()), out.size(), _w.data(), _w.size());
+    wcstombs_s(&size, const_cast<char *>(out.data()), out.size(), _w.data(), _w.size());
     out.resize(size - 1);
     return out;
 #else
-   return *this;
+    return *this;
 #endif
 }
 
@@ -129,14 +115,14 @@ KShimPath::operator KShim::string() const
 #endif
 }
 
-KShimPath operator /(const KShimPath &lhs, const KShimPath &rhs)
+KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs)
 {
     auto out = lhs;
     out.m_path += KSTRING_LITERAL("/") + rhs.m_path;
     return out;
 }
 
-bool operator ==(const KShimPath &lhs, const KShimPath &rhs)
+bool operator==(const KShimPath &lhs, const KShimPath &rhs)
 {
     return lhs.m_path == rhs.m_path;
 }

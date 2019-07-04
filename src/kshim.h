@@ -38,10 +38,10 @@
 
 class KShimData;
 
-namespace KShim
-{
+namespace KShim {
 int run(const KShimData &data, const std::vector<string> &args);
-bool createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target, const std::vector<KShim::string> &args, const std::vector<KShim::string> &env);
+bool createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target,
+                const std::vector<KShim::string> &args, const std::vector<KShim::string> &env);
 KShim::path binaryName();
 KShim::string getenv(const KShim::string &var);
 
@@ -51,11 +51,7 @@ int main(const std::vector<string> &args);
 class KLog
 {
 public:
-    enum class Type
-    {
-        Debug,
-        Error
-    };
+    enum class Type { Debug, Error };
     KLog(Type t);
     KLog(const KLog &other);
     ~KLog();
@@ -74,21 +70,21 @@ private:
 
     static bool s_loggingEnabled;
 
-    friend KLog &operator<< (KLog &log, const KShim::path &t);
-    friend KLog &operator<< (KLog &log, const std::string &t);
+    friend KLog &operator<<(KLog &log, const KShim::path &t);
+    friend KLog &operator<<(KLog &log, const std::string &t);
 
     template<typename T>
-    friend KLog & operator<<(KLog &, const T&);
-
+    friend KLog &operator<<(KLog &, const T &);
 };
 #define kLog KLog(KLog::Type::Debug).log()
 #define kLog2(X) KLog(X).log()
 
-KLog &operator<< (KLog &log, const KShim::path &t);
-KLog &operator<< (KLog &log, const std::string &t);
+KLog &operator<<(KLog &log, const KShim::path &t);
+KLog &operator<<(KLog &log, const std::string &t);
 
-template <typename T>
-KLog &operator<< (KLog &log, const T &t) {
+template<typename T>
+KLog &operator<<(KLog &log, const T &t)
+{
     if (log.doLog()) {
         *log.m_stream << t;
     }

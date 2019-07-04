@@ -26,11 +26,9 @@
 #ifndef KSHIMSTRING_H
 #define KSHIMSTRING_H
 
-
 #include <string>
 
-namespace KShim
-{
+namespace KShim {
 #ifdef _WIN32
 #define KSTRING(X) L##X
 using string = std::wstring;
@@ -41,7 +39,11 @@ using string = std::string;
 using stringstream = std::stringstream;
 #endif
 
-#define KSTRING_LITERAL(X) []{ static const KShim::string _s = KSTRING(X); return _s;}()
+#define KSTRING_LITERAL(X)                                                                         \
+    [] {                                                                                           \
+        static const KShim::string _s = KSTRING(X);                                                \
+        return _s;                                                                                 \
+    }()
 
 }
 #endif // KSHIMSTRING_H

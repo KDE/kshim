@@ -38,7 +38,7 @@
 using namespace std;
 using namespace nlohmann;
 
-namespace  {
+namespace {
 static const int DataStorageSize = 1024 * 2;
 
 // don't make const to prevent optimisation
@@ -47,16 +47,13 @@ struct command
     char cmd[DataStorageSize];
 };
 
-static command StartupCommand {
-    KShimDataDef
-};
+static command StartupCommand { KShimDataDef };
 }
 
 KShimData::KShimData()
-    : m_rawData(StartupCommand.cmd, StartupCommand.cmd +  sizeof(StartupCommand.cmd))
+    : m_rawData(StartupCommand.cmd, StartupCommand.cmd + sizeof(StartupCommand.cmd))
 {
-    if (isShim())
-    {
+    if (isShim()) {
         kLog << "Load raw Data: " << m_rawData.data();
         json data = json::parse(m_rawData.data());
         m_app = data["app"].get<KShim::string>();
@@ -105,8 +102,7 @@ KShim::string KShimData::formatCommand(const vector<KShim::string> &arguments) c
 KShim::string KShimData::formatArgs(const std::vector<KShim::string> &arguments) const
 {
     KShim::stringstream cmd;
-    cmd << quoteArgs(args())
-        << quoteArgs(arguments);
+    cmd << quoteArgs(args()) << quoteArgs(arguments);
     return cmd.str();
 }
 
@@ -117,15 +113,17 @@ const vector<char> &KShimData::rawData() const
 
 std::string KShimData::toJson() const
 {
-    auto out = json{
+    auto out =
+            json {
 #ifdef _WIN32
-    {"app", app().wstring()},
+                { "app", app().wstring() },
 #else
-    {"app", app().string()},
+                { "app", app().string() },
 #endif
-    {"args", args()},
-    {"env", env()},
-}.dump();
+                { "args", args() },
+                { "env", env() },
+            }
+                    .dump();
     kLog << "toJson:" << out.data();
     return out;
 }
@@ -136,22 +134,21 @@ bool KShimData::isShim() const
     return m_rawData.data() != std::string(KShimDataDef);
 }
 
-
 KShim::path KShimData::makeAbsouteCommand(const KShim::path &path) const
 {
-    if(path.is_absolute()) {
+    if (path.is_absolute()) {
         return path;
     } else {
         return KShim::binaryName().parent_path() / path;
     }
 }
 
-vector<pair<KShim::string, KShim::string> > KShimData::env() const
+vector<pair<KShim::string, KShim::string>> KShimData::env() const
 {
     return m_env;
 }
 
-void KShimData::setEnv(const vector<pair<KShim::string, KShim::string> > &env)
+void KShimData::setEnv(const vector<pair<KShim::string, KShim::string>> &env)
 {
     m_env = env;
 }
@@ -176,9 +173,8 @@ KShim::string KShimData::quote(const KShim::string &arg) const
     if (needsQuote) {
         out << '"';
     }
-    for (const auto c : arg)
-    {
-        if(c == '\\') {
+    for (const auto c : arg) {
+        if (c == '\\') {
             backslash << c;
         } else if (c == '"') {
             const auto bs = backslash.str();

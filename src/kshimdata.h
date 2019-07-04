@@ -47,7 +47,7 @@ public:
     void addArg(const KShim::string &arg);
 
     std::vector<std::pair<KShim::string, KShim::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShim::string, KShim::string> > &env);
+    void setEnv(const std::vector<std::pair<KShim::string, KShim::string>> &env);
     void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
 
     KShim::string formatCommand(const std::vector<KShim::string> &args) const;
@@ -63,12 +63,10 @@ private:
     KShim::string quoteArgs(std::vector<KShim::string> args) const;
     KShim::path makeAbsouteCommand(const KShim::path &_path) const;
 
-
     KShim::path m_app;
     std::vector<KShim::string> m_args;
     std::vector<std::pair<KShim::string, KShim::string>> m_env;
     std::vector<char> m_rawData;
-
 };
 
 #endif // KSHIMDATA_H

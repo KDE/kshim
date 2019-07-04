@@ -28,7 +28,6 @@
 #include <windows.h>
 #include <shellapi.h>
 
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
 {
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
@@ -46,8 +45,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
 
     std::vector<KShim::string> args;
     args.resize(static_cast<size_t>(argc));
-    for(size_t i=0; i < static_cast<size_t>(argc); ++i)
-    {
+    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
 
