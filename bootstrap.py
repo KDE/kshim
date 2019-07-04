@@ -6,7 +6,7 @@ import os
 
 srcDir = os.path.dirname(__file__)
 includes = ["-I" + os.path.join(srcDir, "src", "3dparty", x) for x in ["args", "nlohmann"]]
-srcFiles = ["kshimdata.cpp", "kshim.cpp"]
+srcFiles = ["kshimdata.cpp", "kshim.cpp", "kshimpath.cpp"]
 
 if os.name == 'nt':
     srcFiles += ["kshim_win.cpp"]
@@ -21,7 +21,8 @@ def run( args : [str]) -> int:
     return subprocess.run(args)
 
 if shutil.which("cl"):
-    run(["cl", "/EHsc", "/O1", "/Fe:kshimgen"] + src + includes)
+    src += [os.path.join(srcDir, "src", "main_win.cpp")]
+    run(["cl", "/EHsc", "/O1", "/Fe:kshimgen", "-D_KSHIM_BOOTSTRAP", "-DUNICODE", "-D_UNICODE", "shell32.lib"] + src + includes)
 else:
     cxx = os.environ.get("CXX", "")
     if cxx:
@@ -31,4 +32,5 @@ else:
             cxx = ["g++"]
         elif shutil.which("clang++"):
             cxx = ["clang++"]
-    run(cxx + ["-O2", "-std=c++11", "-okshimgen"] + src + includes)
+    src += [os.path.join(srcDir, "src", "main_unix.cpp")]
+    run(cxx + ["-O2", "-std=c++11", "-okshimgen", "-D_KSHIM_BOOTSTRAP"] + src + includes)

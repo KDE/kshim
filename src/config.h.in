@@ -28,7 +28,11 @@
 
 #include "kshimstring.h"
 
+#ifndef _KSHIM_BOOTSTRAP
 #cmakedefine01 KSHIM_HAS_FILESYSTEM
+#else
+#define KSHIM_HAS_FILESYSTEM 0
+#endif
 
 #if KSHIM_HAS_FILESYSTEM
 #include <filesystem>
@@ -36,18 +40,23 @@
 #include "kshimpath.h"
 #endif
 
-namespace KShim
-{
+namespace KShim {
 #if KSHIM_HAS_FILESYSTEM
 using path = std::filesystem::path;
 #else
 using path = KShimPath;
 #endif
 
-
+#ifndef _KSHIM_BOOTSTRAP
 constexpr int version_major = @PROJECT_VERSION_MAJOR@;
 constexpr int version_minor = @PROJECT_VERSION_MINOR@;
 constexpr int version_patch = @PROJECT_VERSION_PATCH@;
 const KShim::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
+#else
+constexpr int version_major = 0;
+constexpr int version_minor = 0;
+constexpr int version_patch = 0;
+const KShim::string version = KSTRING_LITERAL("bootsrapped");
+#endif
 }
 #endif // CONFIG_H

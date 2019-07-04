@@ -26,10 +26,13 @@
 #ifndef KSHIM_H
 #define KSHIM_H
 
+#ifndef _KSHIM_BOOTSTRAP
 #include "config.h"
+#else
+#include "config.h.in"
+#endif
 
 #include <iostream>
-#include <filesystem>
 #include <fstream>
 #include <string>
 #include <sstream>
