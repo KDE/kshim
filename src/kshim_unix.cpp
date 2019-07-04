@@ -57,7 +57,7 @@ KShim::path KShim::binaryName()
         if (size > 0) {
             out.resize(size);
         } else {
-            cerr << "Failed to locate shimgen" << endl;
+            kLog2(KLog::Type::Error) << "Failed to locate shimgen";
             exit(1);
         }
         return out;
@@ -99,10 +99,10 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
         if (waitpid(pid, &status, 0) != -1) {
             return status;
         } else {
-            cerr << "KShim: waitpid error" << endl;
+            kLog2(KLog::Type::Error) << "KShim: waitpid error";
         }
     } else {
-        cerr << "KShim: posix_spawn: " << strerror(status) << endl;
+        kLog2(KLog::Type::Error) << "KShim: posix_spawn: " << strerror(status);
     }
     return -1;
 }

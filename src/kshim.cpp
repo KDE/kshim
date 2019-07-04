@@ -145,7 +145,7 @@ bool KLog::s_loggingEnabled = !KShim::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty
 
 KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShim::stringstream) {}
 
-KLog::KLog(const KLog &other) : m_type(other.m_type), m_stream(m_stream) {}
+KLog::KLog(const KLog &other) : m_type(other.m_type), m_stream(other.m_stream) {}
 
 KLog::~KLog()
 {
@@ -173,9 +173,9 @@ KLog::~KLog()
 #else
                     const auto _name = logPath.string();
 #endif
-                    auto out = std::wofstream(_name, std::wofstream::app);
+                    auto out = std::wofstream(_name, std::ios::app);
 #else
-                    auto out = std::ofstream(logPath, std::wofstream::app);
+                    auto out = std::ofstream(logPath, std::ios::app);
 #endif
                     if (!out.is_open()) {
                         std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" "
