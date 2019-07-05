@@ -25,43 +25,14 @@
 
 #include "kshim.h"
 
-#include <windows.h>
-#include <shellapi.h>
+#include <vector>
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
+int main(int argc, char *argv[])
 {
-    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-        FILE *dummy;
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stdout);
-        setvbuf(stdout, nullptr, _IONBF, 0);
-
-        _wfreopen_s(&dummy, L"CONOUT$", L"w", stderr);
-        setvbuf(stderr, nullptr, _IONBF, 0);
-        std::ios::sync_with_stdio();
-    }
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-
-    std::vector<KShim::string> args;
-    args.resize(static_cast<size_t>(argc));
-    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-        args[i] = argv[i];
-    }
-
-    return KShim::main(args);
-}
-
-int wmain()
-{
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-
     std::vector<KShim::string> args;
     args.resize(argc);
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::main(args);
+    return KShim::shimgen_main(args);
 }

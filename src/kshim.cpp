@@ -54,11 +54,25 @@ KShim::path normaliseApplicationName(const KShim::path &app)
 #endif
 }
 
-vector<char> readBinary()
+KShim::path shimName(bool createGuiApplication)
 {
-    const auto name = KShim::binaryName();
 
-#ifndef __MINGW32__
+    const auto path = KShim::binaryName().parent_path();
+    KShim::path name = KSTRING_LITERAL("kshim");
+#ifdef _WIN32
+    if (createGuiApplication)
+    {
+        name = KSTRING_LITERAL("kshimgui");
+    }
+#endif
+    return path / normaliseApplicationName(name);
+}
+
+
+vector<char> readBinary(bool createGuiApplication)
+{
+    const auto name = shimName(createGuiApplication);
+#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
     const auto &_name = name;
 #else
     const auto _name = name.string();
@@ -92,7 +106,7 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
         exit(1);
     }
 
-#ifndef __MINGW32__
+#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
     const auto &_name = name;
 #else
     const auto _name = name.string();
@@ -121,9 +135,9 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
 }
 }
 
-bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const KShim::path &target,
-                       const vector<KShim::string> &args, const vector<KShim::string> &_env)
-{
+bool KShim::createShim(const KShim::string &appName, const KShim::path &target,
+                       const vector<KShim::string> &args, const vector<KShim::string> &_env, bool createGuiApplication)
+{    
     vector<pair<KShim::string, KShim::string>> env;
     env.reserve(_env.size());
     for (const auto &e : _env) {
@@ -131,10 +145,11 @@ bool KShim::createShim(KShimData &shimData, const KShim::string &appName, const 
         env.push_back({ e.substr(0, pos), e.substr(pos + 1) });
     }
     const auto outApp = normaliseApplicationName(appName);
+    KShimData shimData;
     shimData.setApp(target);
     shimData.setArgs(args);
     shimData.setEnv(env);
-    const vector<char> binary = readBinary();
+    const vector<char> binary = readBinary(createGuiApplication);
     if (!binary.empty()) {
         return writeBinary(outApp, shimData, binary);
     }
@@ -168,7 +183,7 @@ KLog::~KLog()
                     }
                     const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
 #ifdef _WIN32
-#ifndef __MINGW32__
+#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
                     const auto &_name = logPath;
 #else
                     const auto _name = logPath.string();
@@ -220,57 +235,72 @@ void KLog::setLoggingEnabled(bool loggingEnabled)
     s_loggingEnabled = loggingEnabled;
 }
 
-int KShim::main(const std::vector<KShim::string> &args)
+int KShim::shimgen_main(const std::vector<KShim::string> &args)
+{
+    KShim::string target;
+    KShim::string app;
+    vector<KShim::string> arguments;
+    vector<KShim::string> env;
+    bool gui = false;
+
+    auto help = [](const KShim::string &msg) {
+        kLog2(KLog::Type::Error)
+                << msg << "\n"
+                << "--create shim target\t\t\tCreate a shim\n"
+                << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+           #ifdef _WIN32
+                << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
+           #endif
+                << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+    };
+    auto nextArg = [&](std::vector<KShim::string>::const_iterator &it,
+            const KShim::string &helpText) -> KShim::string {
+        if (it != args.cend()) {
+            return *it++;
+        } else {
+            help(helpText);
+            exit(1);
+        }
+    };
+
+    auto it = args.cbegin() + 1;
+    while (it != args.cend()) {
+        const auto arg = nextArg(it, KSTRING_LITERAL(""));
+        if (arg == KSTRING_LITERAL("--create")) {
+            const auto msg = KSTRING_LITERAL("--create shim target");
+            app = nextArg(it, msg);
+            target = nextArg(it, msg);
+        } else if (arg == KSTRING_LITERAL("--env")) {
+            env.push_back(nextArg(it, KSTRING_LITERAL("--env key=val")));
+        } else if (arg == KSTRING_LITERAL("--")) {
+            while (it != args.cend()) {
+                arguments.push_back(nextArg(it, KSTRING_LITERAL("")));
+            }
+            break;
+#ifdef _WIN32
+        } else if(arg == KSTRING_LITERAL("--gui")) {
+            gui = true;
+#endif
+        } else if (arg == KSTRING_LITERAL("-h")) {
+            help(KSTRING_LITERAL(""));
+        } else {
+            KShim::stringstream str;
+            str << "Unknwon arg " << arg;
+            help(str.str());
+        }
+    }
+    if (!target.empty()) {
+        return KShim::createShim(app, target, arguments, env, gui) ? 0 : -1;
+    }
+    help(KSTRING_LITERAL(""));
+    return -1;
+}
+
+int KShim::shim_main(const std::vector<KShim::string> &args)
 {
     KShimData data;
     if (!data.isShim()) {
-        KShim::string target;
-        KShim::string app;
-        vector<KShim::string> arguments;
-        vector<KShim::string> env;
-
-        auto help = [](const KShim::string &msg) {
-            kLog2(KLog::Type::Error)
-                    << msg << "\n"
-                    << "--create shim target\t\t\tCreate a shim\n"
-                    << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
-                    << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
-        };
-        auto nextArg = [&](std::vector<KShim::string>::const_iterator &it,
-                           const KShim::string &helpText) -> KShim::string {
-            if (it != args.cend()) {
-                return *it++;
-            } else {
-                help(helpText);
-                exit(1);
-            }
-        };
-
-        auto it = args.cbegin() + 1;
-        while (it != args.cend()) {
-            const auto arg = nextArg(it, KSTRING_LITERAL(""));
-            if (arg == KSTRING_LITERAL("--create")) {
-                const auto msg = KSTRING_LITERAL("--create shim target");
-                app = nextArg(it, msg);
-                target = nextArg(it, msg);
-            } else if (arg == KSTRING_LITERAL("--env")) {
-                env.push_back(nextArg(it, KSTRING_LITERAL("--env key=val")));
-            } else if (arg == KSTRING_LITERAL("--")) {
-                while (it != args.cend()) {
-                    arguments.push_back(nextArg(it, KSTRING_LITERAL("")));
-                }
-                break;
-            } else if (arg == KSTRING_LITERAL("-h")) {
-                help(KSTRING_LITERAL(""));
-            } else {
-                KShim::stringstream str;
-                str << "Unknwon arg " << arg;
-                help(str.str());
-            }
-        }
-        if (!target.empty()) {
-            return KShim::createShim(data, app, target, arguments, env) ? 0 : -1;
-        }
+        kLog2(KLog::Type::Error) << "Please call kshimgen to generate the shim";
     } else {
         const auto tmp = std::vector<KShim::string>(args.cbegin() + 1, args.cend());
         int out = KShim::run(data, tmp);

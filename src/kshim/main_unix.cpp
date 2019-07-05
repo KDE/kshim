@@ -34,5 +34,5 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::main(args);
+    return KShim::shim_main(args);
 }
