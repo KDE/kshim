@@ -44,7 +44,8 @@ class KShimData;
 namespace KShim {
 int run(const KShimData &data, const std::vector<string> &args);
 bool createShim(const KShim::string &appName, const KShim::path &target,
-                const std::vector<KShim::string> &args, const std::vector<KShim::string> &env, bool createGuiApplication);
+                const std::vector<KShim::string> &args, const std::vector<KShim::string> &env,
+                bool createGuiApplication);
 KShim::path binaryName();
 KShim::string getenv(const KShim::string &var);
 

@@ -60,14 +60,12 @@ KShim::path shimName(bool createGuiApplication)
     const auto path = KShim::binaryName().parent_path();
     KShim::path name = KSTRING_LITERAL("kshim");
 #ifdef _WIN32
-    if (createGuiApplication)
-    {
+    if (createGuiApplication) {
         name = KSTRING_LITERAL("kshimgui");
     }
 #endif
     return path / normaliseApplicationName(name);
 }
-
 
 vector<char> readBinary(bool createGuiApplication)
 {
@@ -136,8 +134,9 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
 }
 
 bool KShim::createShim(const KShim::string &appName, const KShim::path &target,
-                       const vector<KShim::string> &args, const vector<KShim::string> &_env, bool createGuiApplication)
-{    
+                       const vector<KShim::string> &args, const vector<KShim::string> &_env,
+                       bool createGuiApplication)
+{
     vector<pair<KShim::string, KShim::string>> env;
     env.reserve(_env.size());
     for (const auto &e : _env) {
@@ -243,18 +242,19 @@ int KShim::shimgen_main(const std::vector<KShim::string> &args)
     vector<KShim::string> env;
     bool gui = false;
 
-    auto help = [](const KShim::string &msg) {
-        kLog2(KLog::Type::Error)
-                << msg << "\n"
-                << "--create shim target\t\t\tCreate a shim\n"
-                << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
-           #ifdef _WIN32
-                << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
-           #endif
-                << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
-    };
+    auto help =
+            [](const KShim::string &msg) {
+                kLog2(KLog::Type::Error)
+                        << msg << "\n"
+                        << "--create shim target\t\t\tCreate a shim\n"
+                        << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+#ifdef _WIN32
+                        << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
+#endif
+                        << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+            };
     auto nextArg = [&](std::vector<KShim::string>::const_iterator &it,
-            const KShim::string &helpText) -> KShim::string {
+                       const KShim::string &helpText) -> KShim::string {
         if (it != args.cend()) {
             return *it++;
         } else {
@@ -278,11 +278,12 @@ int KShim::shimgen_main(const std::vector<KShim::string> &args)
             }
             break;
 #ifdef _WIN32
-        } else if(arg == KSTRING_LITERAL("--gui")) {
+        } else if (arg == KSTRING_LITERAL("--gui")) {
             gui = true;
 #endif
         } else if (arg == KSTRING_LITERAL("-h")) {
             help(KSTRING_LITERAL(""));
+            return 0;
         } else {
             KShim::stringstream str;
             str << "Unknwon arg " << arg;
