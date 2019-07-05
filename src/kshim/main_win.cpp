@@ -51,7 +51,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
     return KShim::shim_main(args);
 }
 
-int wmain()
+int main()
 {
     const auto commandLine = GetCommandLineW();
     int argc;

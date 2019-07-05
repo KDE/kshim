@@ -28,7 +28,7 @@
 #include <windows.h>
 #include <shellapi.h>
 
-int wmain()
+int main()
 {
     const auto commandLine = GetCommandLineW();
     int argc;

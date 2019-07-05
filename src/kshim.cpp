@@ -72,7 +72,7 @@ KShim::path shimName(bool createGuiApplication)
 vector<char> readBinary(bool createGuiApplication)
 {
     const auto name = shimName(createGuiApplication);
-#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
+#if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
     const auto &_name = name;
 #else
     const auto _name = name.string();
@@ -106,7 +106,7 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
         exit(1);
     }
 
-#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
+#if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
     const auto &_name = name;
 #else
     const auto _name = name.string();
@@ -183,7 +183,7 @@ KLog::~KLog()
                     }
                     const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
 #ifdef _WIN32
-#if defined(KSHIM_HAS_FILESYSTEM) || !defined(__MINGW32__)
+#if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
                     const auto &_name = logPath;
 #else
                     const auto _name = logPath.string();
