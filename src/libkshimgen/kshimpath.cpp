@@ -104,7 +104,7 @@ std::string KShimPath::string() const
 #endif
 }
 
-KShimPath::operator KShim::string() const
+KShimPath::operator KShimLib::string() const
 {
 #ifdef _WIN32
     auto out = m_path;
