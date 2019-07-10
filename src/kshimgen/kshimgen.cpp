@@ -27,14 +27,12 @@
 
 #include <algorithm>
 
-
 #ifndef _WIN32
 #include <sys/stat.h>
 #endif
 
 #include <cmrc/cmrc.hpp>
 CMRC_DECLARE(KShimEmbeddeResource);
-
 
 using namespace std;
 
@@ -105,10 +103,9 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
 }
 }
 
-
 bool KShimGen::createShim(const KShimLib::string &appName, const KShimLib::path &target,
-                       const vector<KShimLib::string> &args, const vector<KShimLib::string> &_env,
-                       bool createGuiApplication)
+                          const vector<KShimLib::string> &args,
+                          const vector<KShimLib::string> &_env, bool createGuiApplication)
 {
     vector<pair<KShimLib::string, KShimLib::string>> env;
     env.reserve(_env.size());
@@ -127,7 +124,6 @@ bool KShimGen::createShim(const KShimLib::string &appName, const KShimLib::path 
     }
     return false;
 }
-
 
 int KShimGen::main(const std::vector<KShimLib::string> &args)
 {

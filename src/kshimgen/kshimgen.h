@@ -27,9 +27,7 @@
 
 #include "kshim.h"
 
-namespace KShimGen
-{
-
+namespace KShimGen {
 
 int main(const std::vector<KShimLib::string> &args);
 bool createShim(const KShimLib::string &appName, const KShimLib::path &target,

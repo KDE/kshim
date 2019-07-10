@@ -41,7 +41,7 @@ using stringstream = std::stringstream;
 
 #define KSTRING_LITERAL(X)                                                                         \
     [] {                                                                                           \
-        static const KShimLib::string _s = KSTRING(X);                                                \
+        static const KShimLib::string _s = KSTRING(X);                                             \
         return _s;                                                                                 \
     }()
 
