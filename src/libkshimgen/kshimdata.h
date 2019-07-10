@@ -37,20 +37,20 @@ class KShimData
 public:
     KShimData();
 
-    KShim::path app() const;
-    KShim::path appAbs() const;
-    void setApp(const KShim::path &app);
+    KShimLib::path app() const;
+    KShimLib::path appAbs() const;
+    void setApp(const KShimLib::path &app);
 
-    const std::vector<KShim::string> &args() const;
-    void setArgs(const std::vector<KShim::string> &args);
-    void addArg(const KShim::string &arg);
+    const std::vector<KShimLib::string> &args() const;
+    void setArgs(const std::vector<KShimLib::string> &args);
+    void addArg(const KShimLib::string &arg);
 
-    std::vector<std::pair<KShim::string, KShim::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShim::string, KShim::string>> &env);
-    void addEnvVar(const std::pair<KShim::string, KShim::string> &var);
+    std::vector<std::pair<KShimLib::string, KShimLib::string>> env() const;
+    void setEnv(const std::vector<std::pair<KShimLib::string, KShimLib::string>> &env);
+    void addEnvVar(const std::pair<KShimLib::string, KShimLib::string> &var);
 
-    KShim::string formatCommand(const std::vector<KShim::string> &args) const;
-    KShim::string formatArgs(const std::vector<KShim::string> &args) const;
+    KShimLib::string formatCommand(const std::vector<KShimLib::string> &args) const;
+    KShimLib::string formatArgs(const std::vector<KShimLib::string> &args) const;
 
     bool isShim() const;
     const std::vector<char> &rawData() const;
@@ -58,13 +58,13 @@ public:
     std::string toJson() const;
 
 private:
-    KShim::string quote(const KShim::string &arg) const;
-    KShim::string quoteArgs(std::vector<KShim::string> args) const;
-    KShim::path makeAbsouteCommand(const KShim::path &_path) const;
+    KShimLib::string quote(const KShimLib::string &arg) const;
+    KShimLib::string quoteArgs(std::vector<KShimLib::string> args) const;
+    KShimLib::path makeAbsouteCommand(const KShimLib::path &_path) const;
 
-    KShim::path m_app;
-    std::vector<KShim::string> m_args;
-    std::vector<std::pair<KShim::string, KShim::string>> m_env;
+    KShimLib::path m_app;
+    std::vector<KShimLib::string> m_args;
+    std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
     std::vector<char> m_rawData;
 };
 

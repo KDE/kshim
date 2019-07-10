@@ -56,52 +56,52 @@ KShimData::KShimData()
     if (isShim()) {
         kLog << "Load raw Data: " << m_rawData.data();
         json data = json::parse(m_rawData.data());
-        m_app = data["app"].get<KShim::string>();
-        m_args = data["args"].get<vector<KShim::string>>();
-        m_env = data["env"].get<vector<pair<KShim::string, KShim::string>>>();
+        m_app = data["app"].get<KShimLib::string>();
+        m_args = data["args"].get<vector<KShimLib::string>>();
+        m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
     }
 }
 
-KShim::path KShimData::app() const
+KShimLib::path KShimData::app() const
 {
     return m_app;
 }
 
-KShim::path KShimData::appAbs() const
+KShimLib::path KShimData::appAbs() const
 {
     return makeAbsouteCommand(app());
 }
 
-void KShimData::setApp(const KShim::path &app)
+void KShimData::setApp(const KShimLib::path &app)
 {
     m_app = app;
 }
 
-const vector<KShim::string> &KShimData::args() const
+const vector<KShimLib::string> &KShimData::args() const
 {
     return m_args;
 }
 
-void KShimData::setArgs(const vector<KShim::string> &args)
+void KShimData::setArgs(const vector<KShimLib::string> &args)
 {
     m_args = args;
 }
 
-void KShimData::addArg(const KShim::string &arg)
+void KShimData::addArg(const KShimLib::string &arg)
 {
     m_args.push_back(arg);
 }
 
-KShim::string KShimData::formatCommand(const vector<KShim::string> &arguments) const
+KShimLib::string KShimData::formatCommand(const vector<KShimLib::string> &arguments) const
 {
-    KShim::stringstream cmd;
+    KShimLib::stringstream cmd;
     cmd << quote(appAbs()) << formatArgs(arguments);
     return cmd.str();
 }
 
-KShim::string KShimData::formatArgs(const std::vector<KShim::string> &arguments) const
+KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &arguments) const
 {
-    KShim::stringstream cmd;
+    KShimLib::stringstream cmd;
     cmd << quoteArgs(args()) << quoteArgs(arguments);
     return cmd.str();
 }
@@ -134,31 +134,31 @@ bool KShimData::isShim() const
     return m_rawData.data() != std::string(KShimDataDef);
 }
 
-KShim::path KShimData::makeAbsouteCommand(const KShim::path &path) const
+KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const
 {
     if (path.is_absolute()) {
         return path;
     } else {
-        return KShim::binaryName().parent_path() / path;
+        return KShimLib::binaryName().parent_path() / path;
     }
 }
 
-vector<pair<KShim::string, KShim::string>> KShimData::env() const
+vector<pair<KShimLib::string, KShimLib::string>> KShimData::env() const
 {
     return m_env;
 }
 
-void KShimData::setEnv(const vector<pair<KShim::string, KShim::string>> &env)
+void KShimData::setEnv(const vector<pair<KShimLib::string, KShimLib::string>> &env)
 {
     m_env = env;
 }
 
-void KShimData::addEnvVar(const pair<KShim::string, KShim::string> &var)
+void KShimData::addEnvVar(const pair<KShimLib::string, KShimLib::string> &var)
 {
     m_env.push_back(var);
 }
 
-KShim::string KShimData::quote(const KShim::string &arg) const
+KShimLib::string KShimData::quote(const KShimLib::string &arg) const
 {
     // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
     bool needsQuote = false;
@@ -168,8 +168,8 @@ KShim::string KShimData::quote(const KShim::string &arg) const
             break;
         }
     }
-    KShim::stringstream out;
-    KShim::stringstream backslash;
+    KShimLib::stringstream out;
+    KShimLib::stringstream backslash;
     if (needsQuote) {
         out << '"';
     }
@@ -179,12 +179,12 @@ KShim::string KShimData::quote(const KShim::string &arg) const
         } else if (c == '"') {
             const auto bs = backslash.str();
             out << bs << bs << "\\\"";
-            backslash.str(KShim::string());
+            backslash.str(KShimLib::string());
         } else {
             const auto bs = backslash.str();
             if (!bs.empty()) {
                 out << bs;
-                backslash.str(KShim::string());
+                backslash.str(KShimLib::string());
             }
             out << c;
         }
@@ -200,9 +200,9 @@ KShim::string KShimData::quote(const KShim::string &arg) const
     return out.str();
 }
 
-KShim::string KShimData::quoteArgs(vector<KShim::string> args) const
+KShimLib::string KShimData::quoteArgs(vector<KShimLib::string> args) const
 {
-    KShim::stringstream command;
+    KShimLib::stringstream command;
     for (const auto &arg : args) {
         command << " " << quote(arg);
     }

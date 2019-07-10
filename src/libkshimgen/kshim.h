@@ -37,12 +37,10 @@
 
 class KShimData;
 
-namespace KShim {
+namespace KShimLib {
 int run(const KShimData &data, const std::vector<string> &args);
-KShim::path binaryName();
-KShim::string getenv(const KShim::string &var);
-
-int shim_main(const std::vector<string> &args);
+KShimLib::path binaryName();
+KShimLib::string getenv(const KShimLib::string &var);
 }
 
 class KLog
@@ -63,11 +61,11 @@ public:
 private:
     bool doLog() const;
     Type m_type;
-    std::shared_ptr<KShim::stringstream> m_stream;
+    std::shared_ptr<KShimLib::stringstream> m_stream;
 
     static bool s_loggingEnabled;
 
-    friend KLog &operator<<(KLog &log, const KShim::path &t);
+    friend KLog &operator<<(KLog &log, const KShimLib::path &t);
     friend KLog &operator<<(KLog &log, const std::string &t);
 
     template<typename T>
@@ -76,7 +74,7 @@ private:
 #define kLog KLog(KLog::Type::Debug).log()
 #define kLog2(X) KLog(X).log()
 
-KLog &operator<<(KLog &log, const KShim::path &t);
+KLog &operator<<(KLog &log, const KShimLib::path &t);
 KLog &operator<<(KLog &log, const std::string &t);
 
 template<typename T>

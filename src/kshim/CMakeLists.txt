@@ -1,9 +1,9 @@
-# console applications as window applications doesnt work
-#add_executable(kshimgen WIN32)
+set(KSHIM_SRC kshimmain.cpp)
+
 if (WIN32)
-    set(KSHIM_SRC main_win.cpp)
+    list(APPEND KSHIM_SRC main_win.cpp)
 else()
-    set(KSHIM_SRC main_unix.cpp)
+    list(APPEND KSHIM_SRC main_unix.cpp)
 endif()
 
 add_executable(kshim ${KSHIM_SRC})

@@ -25,6 +25,8 @@
 #include "kshimgen.h"
 #include "kshimdata.h"
 
+#include <algorithm>
+
 
 #ifndef _WIN32
 #include <sys/stat.h>
@@ -38,10 +40,10 @@ using namespace std;
 
 namespace {
 
-KShim::path normaliseApplicationName(const KShim::path &app)
+KShimLib::path normaliseApplicationName(const KShimLib::path &app)
 {
 #ifdef _WIN32
-    KShim::path out = app;
+    KShimLib::path out = app;
     out.replace_extension(KSTRING_LITERAL(KSHIM_EXE_SUFFIX));
     return out;
 #else
@@ -62,7 +64,7 @@ vector<char> readBinary(bool createGuiApplication)
     return vector<char>(binary.begin(), binary.end());
 }
 
-bool writeBinary(const KShim::path &name, const KShimData &shimData, const vector<char> &binary)
+bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const vector<char> &binary)
 {
     vector<char> dataOut = binary;
 
@@ -104,11 +106,11 @@ bool writeBinary(const KShim::path &name, const KShimData &shimData, const vecto
 }
 
 
-bool KShimGen::createShim(const KShim::string &appName, const KShim::path &target,
-                       const vector<KShim::string> &args, const vector<KShim::string> &_env,
+bool KShimGen::createShim(const KShimLib::string &appName, const KShimLib::path &target,
+                       const vector<KShimLib::string> &args, const vector<KShimLib::string> &_env,
                        bool createGuiApplication)
 {
-    vector<pair<KShim::string, KShim::string>> env;
+    vector<pair<KShimLib::string, KShimLib::string>> env;
     env.reserve(_env.size());
     for (const auto &e : _env) {
         const auto pos = e.find('=');
@@ -127,16 +129,16 @@ bool KShimGen::createShim(const KShim::string &appName, const KShim::path &targe
 }
 
 
-int KShimGen::shimgen_main(const std::vector<KShim::string> &args)
+int KShimGen::main(const std::vector<KShimLib::string> &args)
 {
-    KShim::string target;
-    KShim::string app;
-    vector<KShim::string> arguments;
-    vector<KShim::string> env;
+    KShimLib::string target;
+    KShimLib::string app;
+    vector<KShimLib::string> arguments;
+    vector<KShimLib::string> env;
     bool gui = false;
 
     auto help =
-            [](const KShim::string &msg) {
+            [](const KShimLib::string &msg) {
                 kLog2(KLog::Type::Error)
                         << msg << "\n"
                         << "--create shim target\t\t\tCreate a shim\n"
@@ -146,8 +148,8 @@ int KShimGen::shimgen_main(const std::vector<KShim::string> &args)
 #endif
                         << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
             };
-    auto nextArg = [&](std::vector<KShim::string>::const_iterator &it,
-                       const KShim::string &helpText) -> KShim::string {
+    auto nextArg = [&](std::vector<KShimLib::string>::const_iterator &it,
+                       const KShimLib::string &helpText) -> KShimLib::string {
         if (it != args.cend()) {
             return *it++;
         } else {
@@ -178,7 +180,7 @@ int KShimGen::shimgen_main(const std::vector<KShim::string> &args)
             help(KSTRING_LITERAL(""));
             return 0;
         } else {
-            KShim::stringstream str;
+            KShimLib::stringstream str;
             str << "Unknwon arg " << arg;
             help(str.str());
         }

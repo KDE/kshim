@@ -40,9 +40,9 @@ using namespace std;
 
 extern char **environ;
 
-KShim::path KShim::binaryName()
+KShimLib::path KShimLib::binaryName()
 {
-    static KShim::path _path = [] {
+    static KShimLib::path _path = [] {
         size_t size;
 #if __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
@@ -65,14 +65,14 @@ KShim::path KShim::binaryName()
     return _path;
 }
 
-int KShim::run(const KShimData &data, const vector<KShim::string> &args)
+int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
 {
     for (auto var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
         setenv(var.first.c_str(), var.second.c_str(), true);
     }
     vector<char *> arguments;
-    auto addArg = [&arguments](const KShim::string &s) {
+    auto addArg = [&arguments](const KShimLib::string &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
     const auto app = data.appAbs().string();
@@ -107,7 +107,7 @@ int KShim::run(const KShimData &data, const vector<KShim::string> &args)
     return -1;
 }
 
-KShim::string KShim::getenv(const KShim::string &var)
+KShimLib::string KShimLib::getenv(const KShimLib::string &var)
 {
     const char *env = ::getenv(var.data());
     if (env) {

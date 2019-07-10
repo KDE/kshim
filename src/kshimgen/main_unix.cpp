@@ -24,15 +24,16 @@
 */
 
 #include "kshim.h"
+#include "kshimgen.h"
 
 #include <vector>
 
 int main(int argc, char *argv[])
 {
-    std::vector<KShim::string> args;
+    std::vector<KShimLib::string> args;
     args.resize(argc);
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::shimgen_main(args);
+    return KShimGen::main(args);
 }

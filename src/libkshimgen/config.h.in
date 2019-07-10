@@ -38,7 +38,7 @@
 #include "kshimpath.h"
 #endif
 
-namespace KShim {
+namespace KShimLib {
 #if KSHIM_HAS_FILESYSTEM
 using path = std::filesystem::path;
 #else
@@ -49,7 +49,7 @@ using path = KShimPath;
 constexpr int version_major = @PROJECT_VERSION_MAJOR@;
 constexpr int version_minor = @PROJECT_VERSION_MINOR@;
 constexpr int version_patch = @PROJECT_VERSION_PATCH@;
-const KShim::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
+const KShimLib::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
 #else
 constexpr int version_major = 0;
 constexpr int version_minor = 0;

@@ -31,9 +31,9 @@
 
 using namespace std;
 
-KShim::path KShim::binaryName()
+KShimLib::path KShimLib::binaryName()
 {
-    static const KShim::path path = [] {
+    static const KShimLib::path path = [] {
         std::wstring buf;
         size_t size;
         do {
@@ -47,7 +47,7 @@ KShim::path KShim::binaryName()
     return path;
 }
 
-int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
+int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string> &args)
 {
     for (auto var : data.env()) {
         kLog << "SetEnvironmentVariable: " << var.first << "=" << var.second;
@@ -78,13 +78,13 @@ int KShim::run(const KShimData &data, const std::vector<KShim::string> &args)
     return static_cast<int>(exitCode);
 }
 
-KShim::string KShim::getenv(const KShim::string &var)
+KShimLib::string KShimLib::getenv(const KShimLib::string &var)
 {
     const auto size = GetEnvironmentVariableW(var.data(), nullptr, 0);
     if (!size) {
         return {};
     }
-    KShim::string out(size, 0);
+    KShimLib::string out(size, 0);
     GetEnvironmentVariableW(var.data(), const_cast<wchar_t *>(out.data()), size);
     out.resize(size - 1);
     return out;

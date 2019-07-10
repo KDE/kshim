@@ -24,6 +24,7 @@
 */
 
 #include "kshim.h"
+#include "kshimmain.h"
 
 #include <windows.h>
 #include <shellapi.h>
@@ -43,12 +44,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
-    std::vector<KShim::string> args;
+    std::vector<KShimLib::string> args;
     args.resize(static_cast<size_t>(argc));
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::shim_main(args);
+    return KShim::main(args);
 }
 
 int main()
@@ -57,10 +58,10 @@ int main()
     int argc;
     wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
-    std::vector<KShim::string> args;
+    std::vector<KShimLib::string> args;
     args.resize(argc);
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::shim_main(args);
+    return KShim::main(args);
 }

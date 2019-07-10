@@ -32,7 +32,7 @@ class KShimPath
 {
 public:
     KShimPath();
-    KShimPath(const KShim::string &path);
+    KShimPath(const KShimLib::string &path);
     KShimPath(const KShimPath &path);
 
     bool is_absolute() const;
@@ -46,10 +46,10 @@ public:
 
     std::string string() const;
 
-    operator KShim::string() const;
+    operator KShimLib::string() const;
 
 private:
-    KShim::string m_path;
+    KShimLib::string m_path;
 
     friend KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
     friend bool operator==(const KShimPath &lhs, const KShimPath &rhs);

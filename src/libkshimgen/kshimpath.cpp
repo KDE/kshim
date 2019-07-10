@@ -34,7 +34,7 @@
 
 KShimPath::KShimPath() {}
 
-KShimPath::KShimPath(const KShim::string &path) : m_path(path)
+KShimPath::KShimPath(const KShimLib::string &path) : m_path(path)
 {
 #ifdef _WIN32
     std::replace(m_path.begin(), m_path.end(), '\\', '/');

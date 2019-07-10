@@ -39,9 +39,9 @@
 
 using namespace std;
 
-bool KLog::s_loggingEnabled = !KShim::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty();
+bool KLog::s_loggingEnabled = !KShimLib::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty();
 
-KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShim::stringstream) {}
+KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShimLib::stringstream) {}
 
 KLog::KLog(const KLog &other) : m_type(other.m_type), m_stream(other.m_stream) {}
 
@@ -60,11 +60,11 @@ KLog::~KLog()
         case KLog::Type::Debug: {
             if (doLog()) {
                 static auto _log = [] {
-                    auto home = KShim::getenv(KSTRING_LITERAL("HOME"));
+                    auto home = KShimLib::getenv(KSTRING_LITERAL("HOME"));
                     if (home.empty()) {
-                        home = KShim::getenv(KSTRING_LITERAL("USERPROFILE"));
+                        home = KShimLib::getenv(KSTRING_LITERAL("USERPROFILE"));
                     }
-                    const auto logPath = KShim::path(home) / KSTRING_LITERAL(".kshim.log");
+                    const auto logPath = KShimLib::path(home) / KSTRING_LITERAL(".kshim.log");
 #ifdef _WIN32
 #if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
                     const auto &_name = logPath;
@@ -94,7 +94,7 @@ KLog::~KLog()
 
 KLog &KLog::log()
 {
-    *this << "KShimgen " << KShim::version << ": ";
+    *this << "KShimgen " << KShimLib::version << ": ";
     return *this;
 }
 
@@ -118,21 +118,7 @@ void KLog::setLoggingEnabled(bool loggingEnabled)
     s_loggingEnabled = loggingEnabled;
 }
 
-int KShim::shim_main(const std::vector<KShim::string> &args)
-{
-    KShimData data;
-    if (!data.isShim()) {
-        kLog2(KLog::Type::Error) << "Please call kshimgen to generate the shim";
-    } else {
-        const auto tmp = std::vector<KShim::string>(args.cbegin() + 1, args.cend());
-        int out = KShim::run(data, tmp);
-        kLog << "Exit: " << out;
-        return out;
-    }
-    return -1;
-}
-
-KLog &operator<<(KLog &log, const KShim::path &t)
+KLog &operator<<(KLog &log, const KShimLib::path &t)
 {
 #ifdef _WIN32
     log << t.wstring();
