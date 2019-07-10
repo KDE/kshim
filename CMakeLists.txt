@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(KShim VERSION 0.2.0)
+project(KShim LANGUAGES CXX VERSION 0.2.0)
 
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
+include(cmakerc/CMakeRC)
 
 set(FILESYSTEM_LIBS)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -38,4 +40,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 add_subdirectory(src)
-add_subdirectory(tests)
+
+if (BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

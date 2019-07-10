@@ -22,23 +22,19 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
+#ifndef KSHIMGEN_H
+#define KSHIMGEN_H
 
 #include "kshim.h"
-#include "kshimgen.h"
 
-#include <windows.h>
-#include <shellapi.h>
-
-int main()
+namespace KShimGen
 {
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
-    std::vector<KShim::string> args;
-    args.resize(argc);
-    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-        args[i] = argv[i];
-    }
-    return KShimGen::shimgen_main(args);
+
+int shimgen_main(const std::vector<KShim::string> &args);
+bool createShim(const KShim::string &appName, const KShim::path &target,
+                const std::vector<KShim::string> &args, const std::vector<KShim::string> &env,
+                bool createGuiApplication);
 }
+
+#endif // KSHIMGEN_H

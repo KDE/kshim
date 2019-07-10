@@ -26,11 +26,7 @@
 #ifndef KSHIM_H
 #define KSHIM_H
 
-#ifndef _KSHIM_BOOTSTRAP
 #include "config.h"
-#else
-#include "config.h.in"
-#endif
 
 #include <iostream>
 #include <fstream>
@@ -43,13 +39,9 @@ class KShimData;
 
 namespace KShim {
 int run(const KShimData &data, const std::vector<string> &args);
-bool createShim(const KShim::string &appName, const KShim::path &target,
-                const std::vector<KShim::string> &args, const std::vector<KShim::string> &env,
-                bool createGuiApplication);
 KShim::path binaryName();
 KShim::string getenv(const KShim::string &var);
 
-int shimgen_main(const std::vector<string> &args);
 int shim_main(const std::vector<string> &args);
 }
 

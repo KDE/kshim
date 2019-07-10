@@ -28,11 +28,9 @@
 
 #include "kshimstring.h"
 
-#ifndef _KSHIM_BOOTSTRAP
 #cmakedefine01 KSHIM_HAS_FILESYSTEM
-#else
-#define KSHIM_HAS_FILESYSTEM 0
-#endif
+
+#define KSHIM_EXE_SUFFIX "@CMAKE_EXECUTABLE_SUFFIX@"
 
 #if KSHIM_HAS_FILESYSTEM
 #include <filesystem>
