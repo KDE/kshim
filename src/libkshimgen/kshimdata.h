@@ -36,6 +36,7 @@ class KShimData
 {
 public:
     KShimData();
+    KShimData(const std::vector<char> &data);
 
     KShimLib::path app() const;
     KShimLib::path appAbs() const;
@@ -52,9 +53,6 @@ public:
     KShimLib::string formatCommand(const std::vector<KShimLib::string> &args) const;
     KShimLib::string formatArgs(const std::vector<KShimLib::string> &args) const;
 
-    bool isShim() const;
-    const std::vector<char> &rawData() const;
-
     std::string toJson() const;
 
 private:
@@ -65,7 +63,7 @@ private:
     KShimLib::path m_app;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
-    std::vector<char> m_rawData;
+    const std::vector<char> m_rawData;
 };
 
 #endif // KSHIMDATA_H

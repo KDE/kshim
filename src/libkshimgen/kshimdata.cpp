@@ -33,33 +33,22 @@
 #include <fstream>
 #include <sstream>
 
-#define KShimDataDef "KShimData"
 
 using namespace std;
 using namespace nlohmann;
 
-namespace {
-static const int DataStorageSize = 1024 * 2;
-
-// don't make const to prevent optimisation
-struct command
+KShimData::KShimData()
 {
-    char cmd[DataStorageSize];
-};
-
-static command StartupCommand { KShimDataDef };
 }
 
-KShimData::KShimData()
-    : m_rawData(StartupCommand.cmd, StartupCommand.cmd + sizeof(StartupCommand.cmd))
+KShimData::KShimData(const vector<char> &rawData)
+    : m_rawData(rawData)
 {
-    if (isShim()) {
-        kLog << "Load raw Data: " << m_rawData.data();
-        json data = json::parse(m_rawData.data());
-        m_app = data["app"].get<KShimLib::string>();
-        m_args = data["args"].get<vector<KShimLib::string>>();
-        m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
-    }
+    kLog << "Load raw Data: " << m_rawData.data();
+    json data = json::parse(m_rawData.data());
+    m_app = data["app"].get<KShimLib::string>();
+    m_args = data["args"].get<vector<KShimLib::string>>();
+    m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
 }
 
 KShimLib::path KShimData::app() const
@@ -106,11 +95,6 @@ KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &argu
     return cmd.str();
 }
 
-const vector<char> &KShimData::rawData() const
-{
-    return m_rawData;
-}
-
 std::string KShimData::toJson() const
 {
     auto out =
@@ -126,12 +110,6 @@ std::string KShimData::toJson() const
                     .dump();
     kLog << "toJson:" << out.data();
     return out;
-}
-
-bool KShimData::isShim() const
-{
-    kLog << "isShim: " << m_rawData.data();
-    return m_rawData.data() != std::string(KShimDataDef);
 }
 
 KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const

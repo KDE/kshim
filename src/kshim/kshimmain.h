@@ -22,36 +22,15 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
+#ifndef KSHIM_MAIN_H
+#define KSHIM_MAIN_H
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#include "kshim.h"
 
-#include "kshimstring.h"
-
-#cmakedefine01 KSHIM_HAS_FILESYSTEM
-
-#define KSHIM_EXE_SUFFIX "@CMAKE_EXECUTABLE_SUFFIX@"
-
-#if KSHIM_HAS_FILESYSTEM
-#include <filesystem>
-#else
-#include "kshimpath.h"
-#endif
-
-namespace KShimLib {
-#if KSHIM_HAS_FILESYSTEM
-using path = std::filesystem::path;
-#else
-using path = KShimPath;
-#endif
-
-constexpr int version_major = @PROJECT_VERSION_MAJOR@;
-constexpr int version_minor = @PROJECT_VERSION_MINOR@;
-constexpr int version_patch = @PROJECT_VERSION_PATCH@;
-const KShimLib::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
-
-#define KShimDataDef "KShimData"
-
-constexpr int DataStorageSize = 1024 * 2;
+namespace KShim
+{
+int main(const std::vector<KShimLib::string> &args);
 }
-#endif // CONFIG_H
+
+
+#endif // KSHIM_MAIN_H

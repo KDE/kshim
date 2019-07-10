@@ -22,36 +22,26 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
+#include "kshimmain.h"
+#include "kshimdata.h"
 
-#ifndef CONFIG_H
-#define CONFIG_H
+namespace {
 
-#include "kshimstring.h"
+// don't make const to prevent optimisation
+struct command
+{
+    char cmd[KShimLib::DataStorageSize];
+};
 
-#cmakedefine01 KSHIM_HAS_FILESYSTEM
-
-#define KSHIM_EXE_SUFFIX "@CMAKE_EXECUTABLE_SUFFIX@"
-
-#if KSHIM_HAS_FILESYSTEM
-#include <filesystem>
-#else
-#include "kshimpath.h"
-#endif
-
-namespace KShimLib {
-#if KSHIM_HAS_FILESYSTEM
-using path = std::filesystem::path;
-#else
-using path = KShimPath;
-#endif
-
-constexpr int version_major = @PROJECT_VERSION_MAJOR@;
-constexpr int version_minor = @PROJECT_VERSION_MINOR@;
-constexpr int version_patch = @PROJECT_VERSION_PATCH@;
-const KShimLib::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
-
-#define KShimDataDef "KShimData"
-
-constexpr int DataStorageSize = 1024 * 2;
+static command StartupCommand { KShimDataDef };
 }
-#endif // CONFIG_H
+
+
+int KShim::main(const std::vector<KShimLib::string> &args)
+{
+    KShimData data({StartupCommand.cmd, StartupCommand.cmd + KShimLib::DataStorageSize});
+    const auto tmp = std::vector<KShimLib::string>(args.cbegin() + 1, args.cend());
+    int out = KShimLib::run(data, tmp);
+    kLog << "Exit: " << out;
+    return out;
+}

@@ -67,7 +67,9 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
     vector<char> dataOut = binary;
 
     // look for the end mark and search for the start from there
-    const auto &rawData = shimData.rawData();
+    const std::string marker(KShimDataDef);
+    vector<char> rawData(KShimLib::DataStorageSize, 0);
+    std::copy(marker.cbegin(), marker.cend(), rawData.begin());
     const auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
     if (cmdIt == dataOut.end()) {
         kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
