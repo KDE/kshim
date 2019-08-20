@@ -31,7 +31,7 @@ if(MSVC)
     foreach(_bt DEBUG RELEASE RELWITHDEBINFO)
             string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
     endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
-elif(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+elseif(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     set(CMAKE_EXE_LINKER_FLAGS ${MAKE_EXE_LINKER_FLAGS} -static )
 endif()
 
