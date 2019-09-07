@@ -29,6 +29,25 @@
 #include <windows.h>
 #include <shellapi.h>
 
+int _main()
+{
+    const auto commandLine = GetCommandLineW();
+    size_t argc;
+    wchar_t **argv = CommandLineToArgvW(commandLine, reinterpret_cast<int *>(&argc));
+
+    std::vector<KShimLib::string> args;
+    args.resize(argc);
+    for (size_t i = 0; i < argc; ++i) {
+        args[i] = argv[i];
+    }
+    return KShim::main(args);
+}
+
+int main()
+{
+    return _main();
+}
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
 {
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
@@ -40,28 +59,5 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, char *, int)
         setvbuf(stderr, nullptr, _IONBF, 0);
         std::ios::sync_with_stdio();
     }
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-
-    std::vector<KShimLib::string> args;
-    args.resize(static_cast<size_t>(argc));
-    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-        args[i] = argv[i];
-    }
-    return KShim::main(args);
-}
-
-int main()
-{
-    const auto commandLine = GetCommandLineW();
-    int argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
-
-    std::vector<KShimLib::string> args;
-    args.resize(argc);
-    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
-        args[i] = argv[i];
-    }
-    return KShim::main(args);
+    return _main();
 }

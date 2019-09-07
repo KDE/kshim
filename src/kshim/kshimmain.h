@@ -27,10 +27,8 @@
 
 #include "kshim.h"
 
-namespace KShim
-{
+namespace KShim {
 int main(const std::vector<KShimLib::string> &args);
 }
-
 
 #endif // KSHIM_MAIN_H

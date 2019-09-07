@@ -33,16 +33,12 @@
 #include <fstream>
 #include <sstream>
 
-
 using namespace std;
 using namespace nlohmann;
 
-KShimData::KShimData()
-{
-}
+KShimData::KShimData() {}
 
-KShimData::KShimData(const vector<char> &rawData)
-    : m_rawData(rawData)
+KShimData::KShimData(const vector<char> &rawData) : m_rawData(rawData)
 {
     kLog << "Load raw Data: " << m_rawData.data();
     json data = json::parse(m_rawData.data());
