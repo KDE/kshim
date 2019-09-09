@@ -21,7 +21,7 @@ if(_CMRC_GENERATE_MODE)
         string(REGEX REPLACE "${cleanup_re}" "${cleanup_sub}" chars "${chars}")
     endif()
     string(CONFIGURE [[
-        namespace { const char file_array[] = { @chars@ }; }
+        namespace { const char file_array[] = { @chars@ 0 }; }
         namespace cmrc { namespace @NAMESPACE@ { namespace res_chars {
         extern const char* const @SYMBOL@_begin = file_array;
         extern const char* const @SYMBOL@_end = file_array + @n_bytes@;
@@ -182,14 +182,14 @@ public:
     created_subdirectory add_subdir(std::string name) & {
         _dirs.emplace_back();
         auto& back = _dirs.back();
-        auto& fod = _index.emplace(name, back).first->second;
+        auto& fod = _index.emplace(name, file_or_directory{back}).first->second;
         return created_subdirectory{back, fod};
     }
 
     file_or_directory* add_file(std::string name, const char* begin, const char* end) & {
         assert(_index.find(name) == _index.end());
         _files.emplace_back(begin, end);
-        return &_index.emplace(name, _files.back()).first->second;
+        return &_index.emplace(name, file_or_directory{_files.back()}).first->second;
     }
 
     const file_or_directory* get(const std::string& path) const {
