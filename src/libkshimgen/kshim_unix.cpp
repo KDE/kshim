@@ -69,7 +69,11 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
 {
     for (auto var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
-        setenv(var.first.c_str(), var.second.c_str(), true);
+        if (var.second.empty()) {
+            unsetenv(var.first.c_str());
+        } else {
+            setenv(var.first.c_str(), var.second.c_str(), true);
+        }
     }
     vector<char *> arguments;
     auto addArg = [&arguments](const KShimLib::string &s) {

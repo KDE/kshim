@@ -51,7 +51,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string> &ar
 {
     for (auto var : data.env()) {
         kLog << "SetEnvironmentVariable: " << var.first << "=" << var.second;
-        SetEnvironmentVariableW(var.first.data(), var.second.data());
+        SetEnvironmentVariableW(var.first.data(), var.second.empty() ? var.second.data() : nullptr);
     }
     // TODO: pass environment
     STARTUPINFOW info = {};
