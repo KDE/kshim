@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(KShim LANGUAGES CXX VERSION 0.2.0)
+project(KShim LANGUAGES CXX VERSION 0.3.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 include(cmakerc/CMakeRC)
