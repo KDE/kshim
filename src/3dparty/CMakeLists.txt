@@ -1,1 +1,0 @@
-add_subdirectory(args EXCLUDE_FROM_ALL)
