@@ -93,7 +93,7 @@ KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &argu
 
 std::string KShimData::toJson() const
 {
-    auto out =
+    const auto out =
             json {
 #ifdef _WIN32
                 { "app", app().wstring() },
