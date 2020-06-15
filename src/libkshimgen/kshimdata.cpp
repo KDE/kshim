@@ -41,8 +41,8 @@ enum class Format { Json, Ubjson };
 Format KSHIM_DATA_FORMAT()
 {
     static Format format = [] {
-        const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"));
-        kLog << "DataFormat: " << (var.empty() ? "json" : var);
+        const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"), KSTRING_LITERAL("ubjson"));
+        kLog << "DataFormat: " << var;
         if (var == KSTRING_LITERAL("ubjson")) {
             return Format::Ubjson;
         }
