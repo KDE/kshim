@@ -86,7 +86,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
         kLog2(KLog::Type::Error) << "Failed to open out: " << name;
         return false;
     }
-    const std::string json = shimData.toJson();
+    const std::vector<uint8_t> json = shimData.toJson();
     if (json.size() > rawData.size()) {
         kLog2(KLog::Type::Error) << "Data buffer is too small " << json.size() << " > "
                                  << rawData.size() << " :\n"

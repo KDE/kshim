@@ -53,7 +53,7 @@ public:
     KShimLib::string formatCommand(const std::vector<KShimLib::string> &args) const;
     KShimLib::string formatArgs(const std::vector<KShimLib::string> &args) const;
 
-    std::string toJson() const;
+    std::vector<uint8_t> toJson() const;
 
 private:
     KShimLib::string quote(const KShimLib::string &arg) const;

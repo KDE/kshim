@@ -36,12 +36,40 @@
 using namespace std;
 using namespace nlohmann;
 
+namespace  {
+enum class Format
+{
+    Json,
+    Ubjson
+};
+    Format KSHIM_DATA_FORMAT()
+    {
+        static Format format = []{
+            const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"));
+            if (var == KSTRING_LITERAL("ubjson"))
+            {
+                return Format::Ubjson;
+            }
+            return Format::Json;
+        }();
+        return format;
+    }
+}
+
 KShimData::KShimData() {}
 
 KShimData::KShimData(const vector<char> &rawData) : m_rawData(rawData)
 {
     kLog << "Load raw Data: " << m_rawData.data();
-    json data = json::parse(m_rawData.data());
+    json data;
+    switch (KSHIM_DATA_FORMAT()) {
+    case Format::Json:
+        data = json::parse(m_rawData.data());
+        break;
+    case Format::Ubjson:
+        data = json::from_ubjson(m_rawData.data());
+        break;
+    }
     m_app = data["app"].get<KShimLib::string>();
     m_args = data["args"].get<vector<KShimLib::string>>();
     m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
@@ -91,9 +119,9 @@ KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &argu
     return cmd.str();
 }
 
-std::string KShimData::toJson() const
+std::vector<uint8_t> KShimData::toJson() const
 {
-    const auto out =
+    const auto jsonData =
             json {
 #ifdef _WIN32
                 { "app", app().wstring() },
@@ -102,9 +130,20 @@ std::string KShimData::toJson() const
 #endif
                 { "args", args() },
                 { "env", env() },
-            }
-                    .dump();
-    kLog << "toJson:" << out.data();
+            };
+    std::vector<uint8_t> out;
+    switch (KSHIM_DATA_FORMAT()) {
+    case Format::Json:
+    {
+        const auto dump = jsonData.dump();
+        out = std::vector<uint8_t>(dump.cbegin(), dump.cend());
+        break;
+    }
+    case Format::Ubjson:
+        out = json::to_ubjson(jsonData);
+    }
+
+    kLog << "toJson:" << out.size();
     return out;
 }
 
