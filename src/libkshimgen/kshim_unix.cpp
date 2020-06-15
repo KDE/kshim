@@ -94,7 +94,10 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
         auto log = kLog << "Command:";
         log << data.appAbs();
         for (const char *s : arguments) {
-            log << " " << s;
+            if (s)
+            {
+                log << " " << s;
+            }
         }
     }
     pid_t pid;
