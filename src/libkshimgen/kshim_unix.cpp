@@ -114,11 +114,11 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
     return -1;
 }
 
-KShimLib::string KShimLib::getenv(const KShimLib::string &var)
+KShimLib::string KShimLib::getenv(const KShimLib::string &var, const KShimLib::string &fallback)
 {
     const char *env = ::getenv(var.data());
     if (env) {
         return { env };
     }
-    return {};
+    return fallback;
 }

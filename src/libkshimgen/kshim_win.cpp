@@ -78,11 +78,11 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string> &ar
     return static_cast<int>(exitCode);
 }
 
-KShimLib::string KShimLib::getenv(const KShimLib::string &var)
+KShimLib::string KShimLib::getenv(const KShimLib::string &var, const KShimLib::string &fallback)
 {
     const auto size = GetEnvironmentVariableW(var.data(), nullptr, 0);
     if (!size) {
-        return {};
+        return fallback;
     }
     KShimLib::string out(size, 0);
     GetEnvironmentVariableW(var.data(), const_cast<wchar_t *>(out.data()), size);
