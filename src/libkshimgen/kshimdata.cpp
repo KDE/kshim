@@ -36,24 +36,19 @@
 using namespace std;
 using namespace nlohmann;
 
-namespace  {
-enum class Format
+namespace {
+enum class Format { Json, Ubjson };
+Format KSHIM_DATA_FORMAT()
 {
-    Json,
-    Ubjson
-};
-    Format KSHIM_DATA_FORMAT()
-    {
-        static Format format = []{
-            const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"));
-            if (var == KSTRING_LITERAL("ubjson"))
-            {
-                return Format::Ubjson;
-            }
-            return Format::Json;
-        }();
-        return format;
-    }
+    static Format format = [] {
+        const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"));
+        if (var == KSTRING_LITERAL("ubjson")) {
+            return Format::Ubjson;
+        }
+        return Format::Json;
+    }();
+    return format;
+}
 }
 
 KShimData::KShimData() {}
@@ -121,20 +116,18 @@ KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &argu
 
 std::vector<uint8_t> KShimData::toJson() const
 {
-    const auto jsonData =
-            json {
+    const auto jsonData = json {
 #ifdef _WIN32
-                { "app", app().wstring() },
+        { "app", app().wstring() },
 #else
-                { "app", app().string() },
+        { "app", app().string() },
 #endif
-                { "args", args() },
-                { "env", env() },
-            };
+        { "args", args() },
+        { "env", env() },
+    };
     std::vector<uint8_t> out;
     switch (KSHIM_DATA_FORMAT()) {
-    case Format::Json:
-    {
+    case Format::Json: {
         const auto dump = jsonData.dump();
         out = std::vector<uint8_t>(dump.cbegin(), dump.cend());
         break;
