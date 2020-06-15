@@ -32,12 +32,12 @@
 int _main()
 {
     const auto commandLine = GetCommandLineW();
-    size_t argc;
-    wchar_t **argv = CommandLineToArgvW(commandLine, reinterpret_cast<int *>(&argc));
+    int argc;
+    wchar_t **argv = CommandLineToArgvW(commandLine, &argc);
 
     std::vector<KShimLib::string> args;
     args.resize(argc);
-    for (size_t i = 0; i < argc; ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
     return KShim::main(args);
