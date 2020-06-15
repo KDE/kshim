@@ -42,6 +42,7 @@ Format KSHIM_DATA_FORMAT()
 {
     static Format format = [] {
         const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"));
+        kLog << "DataFormat: " << (var.empty() ? "json" : var);
         if (var == KSTRING_LITERAL("ubjson")) {
             return Format::Ubjson;
         }
