@@ -86,6 +86,7 @@ KLog::~KLog()
                 OutputDebugStringW(line.data());
 #endif
                 _log << line;
+                _log.flush();
             }
         }
         }
