@@ -56,7 +56,6 @@ KShimData::KShimData() {}
 
 KShimData::KShimData(const vector<char> &rawData) : m_rawData(rawData)
 {
-    kLog << "Load raw Data: " << m_rawData.data();
     json data;
     switch (KSHIM_DATA_FORMAT()) {
     case Format::Json:
@@ -66,6 +65,7 @@ KShimData::KShimData(const vector<char> &rawData) : m_rawData(rawData)
         data = json::from_ubjson(m_rawData.data());
         break;
     }
+    kLog << "Json Data: " << data.dump(4);
     m_app = data["app"].get<KShimLib::string>();
     m_args = data["args"].get<vector<KShimLib::string>>();
     m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
