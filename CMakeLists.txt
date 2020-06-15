@@ -23,7 +23,7 @@ if (KSHIM_HAS_FILESYSTEM)
 else()
     message(STATUS "Using minimal replacement for std::filesystem")
     #message(STATUS "${KSHIM_HAS_FILESYSTEM_LOG}")
-    set (CMAKE_CXX_STANDARD 11)
+    set (CMAKE_CXX_STANDARD 14)
 endif()
 
 #link runtime static
