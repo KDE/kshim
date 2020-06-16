@@ -33,14 +33,14 @@ namespace KShimLib {
 #ifdef _WIN32
 #define KSTRING(X) L##X
 using string = std::wstring;
+using string_view = std::wstring_view;
 using stringstream = std::wstringstream;
 #else
 #define KSTRING(X) X
 using string = std::string;
+using string_view = std::string_view;
 using stringstream = std::stringstream;
 #endif
-
-#define KSTRING_LITERAL(X) KSTRING(X##s)
 
 }
 #endif // KSHIMSTRING_H

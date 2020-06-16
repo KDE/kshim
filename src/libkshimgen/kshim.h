@@ -38,9 +38,10 @@
 class KShimData;
 
 namespace KShimLib {
-int run(const KShimData &data, const std::vector<string> &args);
+int run(const KShimData &data, const std::vector<KShimLib::string_view> &args);
 KShimLib::path binaryName();
-KShimLib::string getenv(const KShimLib::string &var, const string &fallback = {});
+KShimLib::string getenv(const KShimLib::string_view &var,
+                        const KShimLib::string_view &fallback = {});
 }
 
 class KLog

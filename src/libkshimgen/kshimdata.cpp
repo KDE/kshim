@@ -41,9 +41,9 @@ enum class Format { Json, Ubjson };
 Format KSHIM_DATA_FORMAT()
 {
     static Format format = [] {
-        const KShimLib::string var = KShimLib::getenv(KSTRING_LITERAL("KSHIM_FORMAT"), KSTRING_LITERAL("ubjson"));
+        const auto var = KShimLib::getenv(KSTRING("KSHIM_FORMAT"), KSTRING("ubjson"));
         kLog << "DataFormat: " << var;
-        if (var == KSTRING_LITERAL("ubjson")) {
+        if (var == KSTRING("ubjson")) {
             return Format::Ubjson;
         }
         return Format::Json;
@@ -66,7 +66,7 @@ KShimData::KShimData(const vector<char> &rawData) : m_rawData(rawData)
         break;
     }
     kLog << "Json Data: " << data.dump(4);
-    m_app = data["app"].get<KShimLib::string>();
+    m_app = KShimLib::path(data["app"].get<KShimLib::string>());
     m_args = data["args"].get<vector<KShimLib::string>>();
     m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
 }
@@ -86,32 +86,38 @@ void KShimData::setApp(const KShimLib::path &app)
     m_app = app;
 }
 
-const vector<KShimLib::string> &KShimData::args() const
+const std::vector<KShimLib::string> &KShimData::args() const
 {
     return m_args;
 }
 
-void KShimData::setArgs(const vector<KShimLib::string> &args)
+void KShimData::setArgs(const std::vector<KShimLib::string_view> &args)
 {
-    m_args = args;
+    m_args = { args.cbegin(), args.cend() };
 }
 
-void KShimData::addArg(const KShimLib::string &arg)
+void KShimData::addArg(const KShimLib::string_view &arg)
 {
-    m_args.push_back(arg);
+    m_args.push_back(KShimLib::string(arg));
 }
 
-KShimLib::string KShimData::formatCommand(const vector<KShimLib::string> &arguments) const
+KShimLib::string KShimData::formatCommand(const std::vector<KShimLib::string_view> &arguments) const
 {
     KShimLib::stringstream cmd;
-    cmd << quote(appAbs()) << formatArgs(arguments);
+    cmd <<
+#ifdef _WIN32
+            quote(appAbs().wstring())
+#else
+            quote(appAbs().string())
+#endif
+        << formatArgs(arguments);
     return cmd.str();
 }
 
-KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string> &arguments) const
+KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string_view> &arguments) const
 {
     KShimLib::stringstream cmd;
-    cmd << quoteArgs(args()) << quoteArgs(arguments);
+    cmd << quoteArgs({ args().cbegin(), args().cend() }) << quoteArgs(arguments);
     return cmd.str();
 }
 
@@ -150,22 +156,23 @@ KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const
     }
 }
 
-vector<pair<KShimLib::string, KShimLib::string>> KShimData::env() const
+const std::vector<std::pair<KShimLib::string, KShimLib::string>> &KShimData::env() const
 {
     return m_env;
 }
 
-void KShimData::setEnv(const vector<pair<KShimLib::string, KShimLib::string>> &env)
+void KShimData::setEnv(
+        const std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> &env)
 {
-    m_env = env;
+    m_env = { env.cbegin(), env.cend() };
 }
 
-void KShimData::addEnvVar(const pair<KShimLib::string, KShimLib::string> &var)
+void KShimData::addEnvVar(const std::pair<KShimLib::string_view, KShimLib::string_view> &var)
 {
-    m_env.push_back(var);
+    m_env.push_back({ KShimLib::string(var.first), KShimLib::string(var.second) });
 }
 
-KShimLib::string KShimData::quote(const KShimLib::string &arg) const
+KShimLib::string KShimData::quote(const KShimLib::string_view &arg) const
 {
     // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
     bool needsQuote = false;
@@ -207,7 +214,7 @@ KShimLib::string KShimData::quote(const KShimLib::string &arg) const
     return out.str();
 }
 
-KShimLib::string KShimData::quoteArgs(vector<KShimLib::string> args) const
+KShimLib::string KShimData::quoteArgs(const std::vector<KShimLib::string_view> &args) const
 {
     KShimLib::stringstream command;
     for (const auto &arg : args) {

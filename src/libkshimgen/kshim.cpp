@@ -39,7 +39,7 @@
 
 using namespace std;
 
-bool KLog::s_loggingEnabled = !KShimLib::getenv(KSTRING_LITERAL("KSHIM_LOG")).empty();
+bool KLog::s_loggingEnabled = !KShimLib::getenv(KSTRING("KSHIM_LOG")).empty();
 
 KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShimLib::stringstream) {}
 
@@ -60,11 +60,11 @@ KLog::~KLog()
         case KLog::Type::Debug: {
             if (doLog()) {
                 static auto _log = [] {
-                    auto home = KShimLib::getenv(KSTRING_LITERAL("HOME"));
+                    auto home = KShimLib::getenv(KSTRING("HOME"));
                     if (home.empty()) {
-                        home = KShimLib::getenv(KSTRING_LITERAL("USERPROFILE"));
+                        home = KShimLib::getenv(KSTRING("USERPROFILE"));
                     }
-                    const auto logPath = KShimLib::path(home) / KSTRING_LITERAL(".kshim.log");
+                    const auto logPath = KShimLib::path(home) / KSTRING(".kshim.log");
 #ifdef _WIN32
 #if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
                     const auto &_name = logPath;

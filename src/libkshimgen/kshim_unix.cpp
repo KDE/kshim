@@ -60,23 +60,23 @@ KShimLib::path KShimLib::binaryName()
             kLog2(KLog::Type::Error) << "Failed to locate shimgen";
             exit(1);
         }
-        return out;
+        return KShimLib::path(out);
     }();
     return _path;
 }
 
-int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
+int KShimLib::run(const KShimData &data, const vector<KShimLib::string_view> &args)
 {
     for (auto var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
         if (var.second.empty()) {
-            unsetenv(var.first.c_str());
+            unsetenv(var.first.data());
         } else {
-            setenv(var.first.c_str(), var.second.c_str(), true);
+            setenv(var.first.data(), var.second.data(), true);
         }
     }
     vector<char *> arguments;
-    auto addArg = [&arguments](const KShimLib::string &s) {
+    auto addArg = [&arguments](const KShimLib::string_view &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
     const auto app = data.appAbs().string();
@@ -94,8 +94,7 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
         auto log = kLog << "Command:";
         log << data.appAbs();
         for (const char *s : arguments) {
-            if (s)
-            {
+            if (s) {
                 log << " " << s;
             }
         }
@@ -114,11 +113,12 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string> &args)
     return -1;
 }
 
-KShimLib::string KShimLib::getenv(const KShimLib::string &var, const KShimLib::string &fallback)
+KShimLib::string KShimLib::getenv(const KShimLib::string_view &var,
+                                  const KShimLib::string_view &fallback)
 {
     const char *env = ::getenv(var.data());
     if (env) {
         return { env };
     }
-    return fallback;
+    return fallback.empty() ? "" : fallback.data();
 }

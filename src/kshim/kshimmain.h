@@ -28,7 +28,7 @@
 #include "kshim.h"
 
 namespace KShim {
-int main(const std::vector<KShimLib::string> &args);
+int main(const std::vector<KShimLib::string_view> &args);
 }
 
 #endif // KSHIM_MAIN_H

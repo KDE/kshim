@@ -30,7 +30,7 @@
 
 int main(int argc, char *argv[])
 {
-    std::vector<KShimLib::string> args;
+    std::vector<KShimLib::string_view> args;
     args.resize(argc);
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];

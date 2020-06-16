@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(KShim LANGUAGES CXX VERSION 0.3.0)
+set (CMAKE_CXX_STANDARD_REQUIRED 17)
+set (CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 include(cmakerc/CMakeRC)
@@ -19,11 +21,9 @@ try_compile(KSHIM_HAS_FILESYSTEM ${CMAKE_CURRENT_BINARY_DIR}
 
 if (KSHIM_HAS_FILESYSTEM)
     message(STATUS "Using std::filesystem")
-    set (CMAKE_CXX_STANDARD 17)
 else()
     message(STATUS "Using minimal replacement for std::filesystem")
     #message(STATUS "${KSHIM_HAS_FILESYSTEM_LOG}")
-    set (CMAKE_CXX_STANDARD 14)
 endif()
 
 #link runtime static

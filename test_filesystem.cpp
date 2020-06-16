@@ -3,6 +3,6 @@
 
 int main()
 {
-    std::filesystem::path("/foo/bar");
+    std::filesystem::path foo("/foo/bar");
     return 0;
 }

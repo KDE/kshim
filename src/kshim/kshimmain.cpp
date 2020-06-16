@@ -36,11 +36,11 @@ struct command
 static command StartupCommand { KShimDataDef };
 }
 
-int KShim::main(const std::vector<KShimLib::string> &args)
+int KShim::main(const std::vector<KShimLib::string_view> &args)
 {
     KShimData data({ StartupCommand.cmd, StartupCommand.cmd + KShimLib::DataStorageSize });
-    const auto tmp = std::vector<KShimLib::string>(args.cbegin() + 1, args.cend());
-    int out = KShimLib::run(data, tmp);
+    const auto tmp = std::vector<KShimLib::string_view>(args.cbegin() + 1, args.cend());
+    const int out = KShimLib::run(data, tmp);
     kLog << "Exit: " << out;
     return out;
 }

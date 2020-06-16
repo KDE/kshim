@@ -43,21 +43,21 @@ public:
     void setApp(const KShimLib::path &app);
 
     const std::vector<KShimLib::string> &args() const;
-    void setArgs(const std::vector<KShimLib::string> &args);
-    void addArg(const KShimLib::string &arg);
+    void setArgs(const std::vector<KShimLib::string_view> &args);
+    void addArg(const KShimLib::string_view &arg);
 
-    std::vector<std::pair<KShimLib::string, KShimLib::string>> env() const;
-    void setEnv(const std::vector<std::pair<KShimLib::string, KShimLib::string>> &env);
-    void addEnvVar(const std::pair<KShimLib::string, KShimLib::string> &var);
+    const std::vector<std::pair<KShimLib::string, KShimLib::string>> &env() const;
+    void setEnv(const std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> &env);
+    void addEnvVar(const std::pair<KShimLib::string_view, KShimLib::string_view> &var);
 
-    KShimLib::string formatCommand(const std::vector<KShimLib::string> &args) const;
-    KShimLib::string formatArgs(const std::vector<KShimLib::string> &args) const;
+    KShimLib::string formatCommand(const std::vector<KShimLib::string_view> &args) const;
+    KShimLib::string formatArgs(const std::vector<KShimLib::string_view> &args) const;
 
     std::vector<uint8_t> toJson() const;
 
 private:
-    KShimLib::string quote(const KShimLib::string &arg) const;
-    KShimLib::string quoteArgs(std::vector<KShimLib::string> args) const;
+    KShimLib::string quote(const KShimLib::string_view &arg) const;
+    KShimLib::string quoteArgs(const std::vector<KShimLib::string_view> &args) const;
     KShimLib::path makeAbsouteCommand(const KShimLib::path &_path) const;
 
     KShimLib::path m_app;

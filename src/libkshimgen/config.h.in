@@ -30,8 +30,6 @@
 
 #cmakedefine01 KSHIM_HAS_FILESYSTEM
 
-#define KSHIM_EXE_SUFFIX "@CMAKE_EXECUTABLE_SUFFIX@"
-
 // needs to be a define as it needs to end up in a native char array in the shim
 #define KShimDataDef "KShimData"
 
@@ -52,7 +50,9 @@ using path = KShimPath;
 constexpr int version_major = @PROJECT_VERSION_MAJOR@;
 constexpr int version_minor = @PROJECT_VERSION_MINOR@;
 constexpr int version_patch = @PROJECT_VERSION_PATCH@;
-const KShimLib::string version = KSTRING_LITERAL("@PROJECT_VERSION@");
+constexpr KShimLib::string_view version(KSTRING("@PROJECT_VERSION@"));
+constexpr std::string_view exeSuffix("@CMAKE_EXECUTABLE_SUFFIX@");
+constexpr KShimLib::string_view exeSuffixW(KSTRING("@CMAKE_EXECUTABLE_SUFFIX@"));
 
 constexpr int DataStorageSize = 1024 * 2;
 }

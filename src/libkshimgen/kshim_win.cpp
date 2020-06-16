@@ -42,12 +42,12 @@ KShimLib::path KShimLib::binaryName()
                                       static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
         buf.resize(size);
-        return buf;
+        return KShimLib::path(buf);
     }();
     return path;
 }
 
-int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string> &args)
+int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view> &args)
 {
     for (auto var : data.env()) {
         kLog << "SetEnvironmentVariable: " << var.first << "=" << var.second;
@@ -78,11 +78,12 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string> &ar
     return static_cast<int>(exitCode);
 }
 
-KShimLib::string KShimLib::getenv(const KShimLib::string &var, const KShimLib::string &fallback)
+KShimLib::string KShimLib::getenv(const KShimLib::string_view &var,
+                                  const KShimLib::string_view &fallback)
 {
     const auto size = GetEnvironmentVariableW(var.data(), nullptr, 0);
     if (!size) {
-        return fallback;
+        return fallback.empty() ? L""s : fallback.data();
     }
     KShimLib::string out(size, 0);
     GetEnvironmentVariableW(var.data(), const_cast<wchar_t *>(out.data()), size);

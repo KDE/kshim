@@ -40,6 +40,9 @@ KShimPath::KShimPath(const KShimLib::string &path) : m_path(path)
     std::replace(m_path.begin(), m_path.end(), '\\', '/');
 #endif
 }
+KShimPath::KShimPath(const KShimLib::string_view &path) : KShimPath(KShimLib::string(path.data()))
+{
+}
 
 KShimPath::KShimPath(const KShimPath &path) : m_path(path.m_path) {}
 
@@ -118,8 +121,13 @@ KShimPath::operator KShimLib::string() const
 KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs)
 {
     auto out = lhs;
-    out.m_path += KSTRING_LITERAL("/") + rhs.m_path;
+    out.m_path += KSTRING("/"s) + rhs.m_path;
     return out;
+}
+
+KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs)
+{
+    return lhs / KShimPath(rhs);
 }
 
 bool operator==(const KShimPath &lhs, const KShimPath &rhs)

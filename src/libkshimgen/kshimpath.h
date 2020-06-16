@@ -32,8 +32,9 @@ class KShimPath
 {
 public:
     KShimPath();
-    KShimPath(const KShimLib::string &path);
+    KShimPath(const KShimLib::string_view &path);
     KShimPath(const KShimPath &path);
+    explicit KShimPath(const KShimLib::string &path);
 
     bool is_absolute() const;
 
@@ -43,19 +44,19 @@ public:
 #ifdef _WIN32
     std::wstring wstring() const;
 #endif
-
     std::string string() const;
-
     operator KShimLib::string() const;
 
 private:
     KShimLib::string m_path;
 
     friend KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
+    friend KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs);
     friend bool operator==(const KShimPath &lhs, const KShimPath &rhs);
 };
 
 KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
+KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs);
 bool operator==(const KShimPath &lhs, const KShimPath &rhs);
 
 #endif // KSHIMPATH_H
