@@ -37,8 +37,6 @@
 #include <windows.h>
 #endif
 
-using namespace std;
-
 bool KLog::s_loggingEnabled = !KShimLib::getenv(KSTRING("KSHIM_LOG")).empty();
 
 KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShimLib::stringstream) {}
@@ -129,7 +127,7 @@ KLog &operator<<(KLog &log, const KShimLib::path &t)
     return log;
 }
 
-KLog &operator<<(KLog &log, const string &t)
+KLog &operator<<(KLog &log, const std::string &t)
 {
     log << t.data();
     return log;

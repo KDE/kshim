@@ -33,7 +33,6 @@
 #include <fstream>
 #include <sstream>
 
-using namespace std;
 using namespace nlohmann;
 
 namespace {
@@ -71,8 +70,8 @@ KShimData::KShimData(const std::string_view &rawData)
     }
     kLog << "Json Data: " << data.dump(4);
     m_app = KShimLib::path(data["app"].get<KShimLib::string>());
-    m_args = data["args"].get<vector<KShimLib::string>>();
-    m_env = data["env"].get<vector<pair<KShimLib::string, KShimLib::string>>>();
+    m_args = data["args"].get<std::vector<KShimLib::string>>();
+    m_env = data["env"].get<std::vector<std::pair<KShimLib::string, KShimLib::string>>>();
 }
 
 KShimLib::path KShimData::app() const

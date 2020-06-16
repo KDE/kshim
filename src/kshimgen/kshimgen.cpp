@@ -34,8 +34,6 @@
 #include <cmrc/cmrc.hpp>
 CMRC_DECLARE(KShimEmbeddeResource);
 
-using namespace std;
-
 namespace {
 
 KShimLib::path normaliseApplicationName(const KShimLib::path &app)
@@ -49,7 +47,7 @@ KShimLib::path normaliseApplicationName(const KShimLib::path &app)
 #endif
 }
 
-vector<char> readBinary(bool createGuiApplication)
+std::vector<char> readBinary(bool createGuiApplication)
 {
     std::string name = "bin/kshim"s + std::string(KShimLib::exeSuffix);
 #ifdef _WIN32
@@ -61,16 +59,16 @@ vector<char> readBinary(bool createGuiApplication)
 #endif
     const auto filesystem = cmrc::KShimEmbeddeResource::get_filesystem();
     const auto binary = filesystem.open(name);
-    return vector<char>(binary.begin(), binary.end());
+    return std::vector<char>(binary.begin(), binary.end());
 }
 
-bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const vector<char> &binary)
+bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const std::vector<char> &binary)
 {
-    vector<char> dataOut = binary;
+    std::vector<char> dataOut = binary;
 
     // look for the end mark and search for the start from there
     const std::string marker(KShimDataDef);
-    vector<char> rawData(KShimLib::DataStorageSize, 0);
+    std::vector<char> rawData(KShimLib::DataStorageSize, 0);
     std::copy(marker.cbegin(), marker.cend(), rawData.begin());
     auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
     if (cmdIt == dataOut.end()) {
@@ -85,7 +83,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
 #else
     const auto _name = KShimLib::string(name);
 #endif
-    ofstream out(_name, ios::out | ios::binary);
+    std::ofstream out(_name, std::ios::out | std::ios::binary);
     if (!out.is_open()) {
         kLog2(KLog::Type::Error) << "Failed to open out: " << name;
         return false;
@@ -101,7 +99,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
     std::memcpy(cmdIt.base(), &size, sizeof (uint64_t));
     cmdIt += sizeof (uint64_t);
     std::copy(json.cbegin(), json.cend(), cmdIt);
-    out.write(dataOut.data(), static_cast<streamsize>(binary.size()));
+    out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
     kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
     out.close();
 
@@ -113,10 +111,10 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
 }
 
 bool KShimGen::createShim(const KShimLib::string_view &appName, const KShimLib::path &target,
-                          const vector<KShimLib::string_view> &args,
-                          const vector<KShimLib::string_view> &_env, bool createGuiApplication)
+                          const std::vector<KShimLib::string_view> &args,
+                          const std::vector<KShimLib::string_view> &_env, bool createGuiApplication)
 {
-    vector<pair<KShimLib::string_view, KShimLib::string_view>> env;
+    std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> env;
     env.reserve(_env.size());
     for (const auto &e : _env) {
         const auto pos = e.find('=');
@@ -127,7 +125,7 @@ bool KShimGen::createShim(const KShimLib::string_view &appName, const KShimLib::
     shimData.setApp(target);
     shimData.setArgs(args);
     shimData.setEnv(env);
-    const vector<char> binary = readBinary(createGuiApplication);
+    const std::vector<char> binary = readBinary(createGuiApplication);
     if (!binary.empty()) {
         return writeBinary(outApp, shimData, binary);
     }
@@ -138,8 +136,8 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
 {
     KShimLib::string_view target;
     KShimLib::string_view app;
-    vector<KShimLib::string_view> arguments;
-    vector<KShimLib::string_view> env;
+    std::vector<KShimLib::string_view> arguments;
+    std::vector<KShimLib::string_view> env;
     bool gui = false;
 
     auto help =

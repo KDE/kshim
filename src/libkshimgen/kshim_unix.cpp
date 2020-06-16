@@ -36,8 +36,6 @@
 #include <libproc.h>
 #endif
 
-using namespace std;
-
 extern char **environ;
 
 KShimLib::path KShimLib::binaryName()
@@ -65,7 +63,7 @@ KShimLib::path KShimLib::binaryName()
     return _path;
 }
 
-int KShimLib::run(const KShimData &data, const vector<KShimLib::string_view> &args)
+int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view> &args)
 {
     for (auto var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
@@ -75,7 +73,7 @@ int KShimLib::run(const KShimData &data, const vector<KShimLib::string_view> &ar
             setenv(var.first.data(), var.second.data(), true);
         }
     }
-    vector<char *> arguments;
+    std::vector<char *> arguments;
     auto addArg = [&arguments](const KShimLib::string_view &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
