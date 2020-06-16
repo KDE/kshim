@@ -28,6 +28,7 @@
 
 #include "../3dparty/nlohmann/json.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -56,7 +57,7 @@ KShimData::KShimData() {}
 KShimData::KShimData(const std::string_view &rawData)
 {
     uint64_t size;
-    std::memcpy(&size, rawData.cbegin(), sizeof (uint64_t));
+    std::memcpy(&size, static_cast<const void*>(rawData.data()), sizeof (uint64_t));
     const auto start = rawData.cbegin() + sizeof (uint64_t);
     const auto end = start + size;
     json data;

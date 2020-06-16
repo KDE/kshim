@@ -26,6 +26,7 @@
 #include "kshimdata.h"
 
 #include <algorithm>
+#include <cstring>
 
 #ifndef _WIN32
 #include <sys/stat.h>
@@ -96,7 +97,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
         return false;
     }
     const uint64_t size = json.size();
-    std::memcpy(cmdIt.base(), &size, sizeof (uint64_t));
+    std::memcpy(&(*cmdIt), &size, sizeof (uint64_t));
     cmdIt += sizeof (uint64_t);
     std::copy(json.cbegin(), json.cend(), cmdIt);
     out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
