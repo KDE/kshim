@@ -36,7 +36,7 @@ class KShimData
 {
 public:
     KShimData();
-    KShimData(const std::vector<char> &data);
+    KShimData(const std::string_view &data);
 
     KShimLib::path app() const;
     KShimLib::path appAbs() const;
@@ -63,7 +63,6 @@ private:
     KShimLib::path m_app;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
-    const std::vector<char> m_rawData;
 };
 
 #endif // KSHIMDATA_H

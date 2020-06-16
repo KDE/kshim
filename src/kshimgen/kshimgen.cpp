@@ -56,6 +56,8 @@ vector<char> readBinary(bool createGuiApplication)
     if (createGuiApplication) {
         name = "bin/kshimgui"s + std::string(KShimLib::exeSuffix);
     }
+#else
+    (void)createGuiApplication;
 #endif
     const auto filesystem = cmrc::KShimEmbeddeResource::get_filesystem();
     const auto binary = filesystem.open(name);
@@ -70,7 +72,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
     const std::string marker(KShimDataDef);
     vector<char> rawData(KShimLib::DataStorageSize, 0);
     std::copy(marker.cbegin(), marker.cend(), rawData.begin());
-    const auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
+    auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
     if (cmdIt == dataOut.end()) {
         kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
         exit(1);
@@ -95,7 +97,10 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const ve
                                  << json.data();
         return false;
     }
-    copy(json.cbegin(), json.cend(), cmdIt);
+    const uint64_t size = json.size();
+    std::memcpy(cmdIt.base(), &size, sizeof (uint64_t));
+    cmdIt += sizeof (uint64_t);
+    std::copy(json.cbegin(), json.cend(), cmdIt);
     out.write(dataOut.data(), static_cast<streamsize>(binary.size()));
     kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
     out.close();
