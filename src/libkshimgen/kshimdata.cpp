@@ -56,17 +56,13 @@ KShimData::KShimData() {}
 
 KShimData::KShimData(const std::string_view &rawData)
 {
-    uint64_t size;
-    std::memcpy(&size, static_cast<const void*>(rawData.data()), sizeof (uint64_t));
-    const auto start = rawData.cbegin() + sizeof (uint64_t);
-    const auto end = start + size;
     json data;
     switch (KSHIM_DATA_FORMAT()) {
     case Format::Json:
-        data = json::parse(start, end);
+        data = json::parse(rawData.cbegin(), rawData.cend());
         break;
     case Format::Ubjson:
-        data = json::from_ubjson(start, end);
+        data = json::from_ubjson(rawData.cbegin(), rawData.cend());
         break;
     }
     kLog << "Json Data: " << data.dump(4);
