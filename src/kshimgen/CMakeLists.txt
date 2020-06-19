@@ -1,6 +1,6 @@
 add_executable(kshimgen kshimgen.cpp)
 if (WIN32)
-    target_sources(kshimgen PRIVATE main_win.cpp)
+    target_sources(kshimgen PRIVATE main_win.cpp kshimgen_win.cpp)
 else()
     target_sources(kshimgen PRIVATE main_unix.cpp)
 endif()

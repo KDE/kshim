@@ -24,6 +24,7 @@
 */
 #include "kshimgen.h"
 #include "kshimdata.h"
+#include "kshimgen_p.h"
 
 #include <algorithm>
 #include <cstring>
@@ -106,6 +107,8 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#else
+    KShimGenPrivate::updateIcon(shimData.appAbs(), name);
 #endif
     return true;
 }
