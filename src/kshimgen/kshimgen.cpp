@@ -69,15 +69,15 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
     std::vector<char> dataOut = binary;
 
     // look for the end mark and search for the start from there
-    const std::string marker(KShimDataDef);
-    std::vector<char> rawData(KShimLib::DataStorageSize, 0);
-    std::copy(marker.cbegin(), marker.cend(), rawData.begin());
-    auto cmdIt = search(dataOut.begin(), dataOut.end(), rawData.cbegin(), rawData.cend());
+    const KShimData::PayLoad findPayLoad { 0, KShimDataDef };
+    const char *_start = reinterpret_cast<const char *>(&findPayLoad);
+    auto cmdIt =
+            search(dataOut.begin(), dataOut.end(), _start, _start + sizeof(KShimData::PayLoad));
     if (cmdIt == dataOut.end()) {
         kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
         exit(1);
     }
-
+    KShimData::PayLoad *outPayLoad = reinterpret_cast<KShimData::PayLoad *>(&*cmdIt);
 #if KSHIM_HAS_FILESYSTEM
     const auto &_name = name;
 #elif defined(__MINGW32__)
@@ -91,16 +91,14 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
         return false;
     }
     const std::vector<uint8_t> json = shimData.toJson();
-    if (json.size() > rawData.size()) {
+    if (json.size() > KShimLib::DataStorageSize) {
         kLog2(KLog::Type::Error) << "Data buffer is too small " << json.size() << " > "
-                                 << rawData.size() << " :\n"
+                                 << KShimLib::DataStorageSize << " :\n"
                                  << json.data();
         return false;
     }
-    const uint64_t size = json.size();
-    std::memcpy(&(*cmdIt), &size, sizeof (uint64_t));
-    cmdIt += sizeof (uint64_t);
-    std::copy(json.cbegin(), json.cend(), cmdIt);
+    outPayLoad->size = json.size();
+    std::copy(json.cbegin(), json.cend(), outPayLoad->cmd);
     out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
     kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
     out.close();

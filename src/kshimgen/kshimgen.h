@@ -28,7 +28,6 @@
 #include "kshim.h"
 
 namespace KShimGen {
-
 int main(const std::vector<KShimLib::string_view> &args);
 bool createShim(const KShimLib::string_view &appName, const KShimLib::path &target,
                 const std::vector<KShimLib::string_view> &args,

@@ -26,22 +26,12 @@
 #include "kshimdata.h"
 
 namespace {
-
-// don't make const to prevent optimisation
-struct command
-{
-    // an initialised data array starts with an uint64_t with the size of the payload
-    // followed by the formated payload
-    char cmd[KShimLib::DataStorageSize];
-};
-
-static command StartupCommand { KShimDataDef };
+static KShimData::PayLoad StartupCommand { 0, KShimDataDef };
 }
 
 int KShim::main(const std::vector<KShimLib::string_view> &args)
 {
-    const uint64_t size = *reinterpret_cast<uint64_t*>(StartupCommand.cmd);
-    const KShimData data({ StartupCommand.cmd + sizeof (uint64_t), size });
+    const KShimData data(StartupCommand);
     // crop the shim name from the args
     const auto tmp = std::vector<KShimLib::string_view>(args.cbegin() + 1, args.cend());
     const int out = KShimLib::run(data, tmp);

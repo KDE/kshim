@@ -54,15 +54,16 @@ Format KSHIM_DATA_FORMAT()
 
 KShimData::KShimData() {}
 
-KShimData::KShimData(const std::string_view &rawData)
+KShimData::KShimData(const PayLoad &payLoad)
 {
+    kLog << "PayLoad Size: " << payLoad.size;
     json data;
     switch (KSHIM_DATA_FORMAT()) {
     case Format::Json:
-        data = json::parse(rawData.cbegin(), rawData.cend());
+        data = json::parse(payLoad.cbegin(), payLoad.cend());
         break;
     case Format::Ubjson:
-        data = json::from_ubjson(rawData.cbegin(), rawData.cend());
+        data = json::from_ubjson(payLoad.cbegin(), payLoad.cend());
         break;
     }
     kLog << "Json Data: " << data.dump(4);

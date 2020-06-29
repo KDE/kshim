@@ -35,8 +35,19 @@
 class KShimData
 {
 public:
+    // don't make const to prevent optimisation
+    struct PayLoad
+    {
+        // an initialised data array starts with an size_t with the size of the payload
+        // followed by the formated payload
+        size_t size;
+        uint8_t cmd[KShimLib::DataStorageSize];
+        inline const uint8_t *cbegin() const { return cmd; }
+        inline const uint8_t *cend() const { return cmd + size; }
+    };
+
     KShimData();
-    KShimData(const std::string_view &data);
+    KShimData(const PayLoad &payLoad);
 
     KShimLib::path app() const;
     KShimLib::path appAbs() const;
