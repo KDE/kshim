@@ -101,7 +101,18 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
     int status = posix_spawn(&pid, app.data(), NULL, NULL, arguments.data(), environ);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
-            return status;
+            if (WIFEXITED(status)) {
+                return WEXITSTATUS(status);
+            } else {
+                if(WIFSIGNALED(status)) {
+                    if(WCOREDUMP(status)) {
+                        kLog2(KLog::Type::Error) << "KShim: the child process produced a core dump";
+                    }
+                    if(WTERMSIG(status)) {
+                        kLog2(KLog::Type::Error) << "KShim: the child process was terminated";;
+                    }
+                }
+            }
         } else {
             kLog2(KLog::Type::Error) << "KShim: waitpid error";
         }
