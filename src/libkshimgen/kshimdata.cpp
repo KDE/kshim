@@ -176,6 +176,9 @@ void KShimData::addEnvVar(const std::pair<KShimLib::string_view, KShimLib::strin
 KShimLib::string KShimData::quote(const KShimLib::string_view &arg) const
 {
     // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
+    if (arg.empty()) {
+        return KSTRING("\"\"");
+    }
     bool needsQuote = false;
     for (const auto c : arg) {
         needsQuote = c == ' ' || c == '\t';
