@@ -50,6 +50,7 @@ KLog::~KLog()
         const auto line = m_stream->str();
         switch (m_type) {
         case KLog::Type::Error:
+        case KLog::Type::Fatal:
 #ifdef _WIN32
             std::wcerr << line;
 #else
@@ -88,6 +89,9 @@ KLog::~KLog()
             }
         }
         }
+    }
+    if (m_type == Type::Fatal) {
+        exit(-1);
     }
 }
 

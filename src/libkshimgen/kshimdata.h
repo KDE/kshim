@@ -70,6 +70,7 @@ private:
     KShimLib::string quote(const KShimLib::string_view &arg) const;
     KShimLib::string quoteArgs(const std::vector<KShimLib::string_view> &args) const;
     KShimLib::path makeAbsouteCommand(const KShimLib::path &_path) const;
+    KShimLib::path findInPath(const KShimLib::path &path) const;
 
     KShimLib::path m_app;
     std::vector<KShimLib::string> m_args;

@@ -131,3 +131,27 @@ KShimLib::string KShimLib::getenv(const KShimLib::string_view &var,
     }
     return fallback.empty() ? "" : fallback.data();
 }
+
+KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
+{
+    auto path_env = std::stringstream(KShimLib::getenv("PATH"));
+    std::string dir;
+    while (std::getline(path_env, dir, ':')) {
+        const auto file = KShimLib::path(dir) / path;
+        if (file != KShimLib::binaryName()) {
+            struct stat sb;
+            if (stat(file.string().data(), &sb) == 0 && sb.st_mode & S_IXUSR) {
+                kLog << "Found: " << file << " for " << path;
+                return file;
+            }
+        }
+    }
+    kLog2(KLog::Type::Fatal) << "Failed to locate" << path;
+    return {};
+}
+
+bool KShimLib::exists(const KShimLib::path &path)
+{
+    struct stat sb;
+    return stat(path.string().data(), &sb) == 0;
+}

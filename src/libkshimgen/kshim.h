@@ -42,12 +42,13 @@ int run(const KShimData &data, const std::vector<KShimLib::string_view> &args);
 KShimLib::path binaryName();
 KShimLib::string getenv(const KShimLib::string_view &var,
                         const KShimLib::string_view &fallback = {});
+bool exists(const KShimLib::path &path);
 }
 
 class KLog
 {
 public:
-    enum class Type { Debug, Error };
+    enum class Type { Debug, Error, Fatal };
     KLog(Type t);
     KLog(const KLog &other);
     ~KLog();

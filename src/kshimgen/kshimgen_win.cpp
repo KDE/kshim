@@ -111,7 +111,7 @@ void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
 {
     auto exe = LoadLibraryExW(src.wstring().data(), nullptr, LOAD_LIBRARY_AS_DATAFILE);
     if (!exe) {
-        kLog2(KLog::Type::Error) << "Failed to load: " << src;
+        kLog << "Failed to load exe for icon: " << src;
         return;
     }
     wchar_t *iconGroupName = nullptr;

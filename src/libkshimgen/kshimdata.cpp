@@ -153,8 +153,12 @@ KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const
     if (path.is_absolute()) {
         return path;
     } else {
-        return KShimLib::binaryName().parent_path() / path;
+        auto tmp = KShimLib::binaryName().parent_path() / path;
+        if (tmp != KShimLib::binaryName() && KShimLib::exists(tmp)) {
+            return tmp;
+        }
     }
+    return findInPath(path);
 }
 
 const std::vector<std::pair<KShimLib::string, KShimLib::string>> &KShimData::env() const

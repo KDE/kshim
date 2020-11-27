@@ -26,8 +26,9 @@
 #include "kshim.h"
 #include "kshimdata.h"
 
-#include <windows.h>
 #include <algorithm>
+#include <comdef.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -45,6 +46,48 @@ KShimLib::path KShimLib::binaryName()
         return KShimLib::path(buf);
     }();
     return path;
+}
+
+bool KShimLib::exists(const KShimLib::path &path)
+{
+    DWORD dwAttrib = GetFileAttributesW(path.wstring().data());
+
+    return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+}
+
+KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
+{
+    auto find = [](const std::wstring &dir, const KShimLib::path &name) {
+        const std::wstring ext = name.extension().empty() ? L".exe" : name.extension();
+        std::wstring buf;
+        size_t size;
+        wchar_t *filePart;
+        size = SearchPathW(dir.data(), name.wstring().data(), ext.data(), 0, nullptr, &filePart);
+        if (size == 0) {
+            return std::wstring();
+        }
+        buf.resize(size);
+        size = SearchPathW(dir.data(), name.wstring().data(), ext.data(),
+                           static_cast<DWORD>(buf.size()), buf.data(), &filePart);
+        if (size > buf.size()) {
+            kLog2(KLog::Type::Fatal) << "SearchPathW failed to find " << name
+                                     << " error: " << _com_error(GetLastError()).ErrorMessage()
+                                     << buf.size() << " " << size;
+        }
+        buf.resize(size);
+        return buf;
+    };
+    auto path_env = std::wstringstream(KShimLib::getenv(L"PATH"));
+    std::wstring dir;
+    while (std::getline(path_env, dir, L';')) {
+        auto tmp = find(dir, path.wstring());
+        if (!tmp.empty() && tmp != KShimLib::binaryName()) {
+            kLog << "Found: " << tmp << " for " << path;
+            return tmp;
+        }
+    }
+    kLog2(KLog::Type::Fatal) << "Failed to locate" << path;
+    return {};
 }
 
 int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view> &args)
@@ -66,7 +109,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
                         INHERIT_PARENT_AFFINITY | CREATE_UNICODE_ENVIRONMENT, nullptr, nullptr,
                         &info, &pInfo)) {
         const auto error = GetLastError();
-        kLog2(KLog::Type::Error) << "Failed to start target" << error;
+        kLog2(KLog::Type::Error) << "Failed to start target" << _com_error(error).ErrorMessage();
         return static_cast<int>(error);
     }
     WaitForSingleObject(pInfo.hProcess, INFINITE);
