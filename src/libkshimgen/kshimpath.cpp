@@ -45,6 +45,7 @@ constexpr char NATIVE_SEPERATOR(UNIX_SEPERATOR);
 KShimPath::KShimPath() {}
 
 KShimPath::KShimPath(const KShimLib::string &_path)
+    : m_seperator(UNIX_SEPERATOR)
 {
     auto path = _path;
 #ifdef _WIN32
@@ -68,7 +69,8 @@ KShimPath::KShimPath(const KShimLib::string_view &path) : KShimPath(KShimLib::st
 }
 
 KShimPath::KShimPath(const KShimPath &path)
-    : m_parts(path.m_parts)
+    : m_seperator(path.m_seperator)
+    , m_parts(path.m_parts)
     , m_is_abs(path.m_is_abs)
 {}
 
@@ -146,6 +148,12 @@ std::string KShimPath::string() const
 #endif
 }
 
+KShimPath &KShimPath::make_preferred()
+{
+    m_seperator = NATIVE_SEPERATOR;
+    return *this;
+}
+
 KShimPath::operator KShimLib::string() const
 {
     if (empty()) {
@@ -155,7 +163,7 @@ KShimPath::operator KShimLib::string() const
     auto it = m_parts.cbegin();
     tmp << *it++;
     for(; it != m_parts.cend(); ++it) {
-        tmp << NATIVE_SEPERATOR << *it;
+        tmp << m_seperator << *it;
     }
     return tmp.str();
 }

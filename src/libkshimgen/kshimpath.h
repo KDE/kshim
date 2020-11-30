@@ -52,8 +52,10 @@ public:
 #endif
     std::string string() const;
     operator KShimLib::string() const;
+    KShimPath &make_preferred();
 
 private:
+    KShimLib::char_t m_seperator;
     std::vector<KShimLib::string> m_parts;
     bool m_is_abs = false;
 

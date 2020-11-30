@@ -32,11 +32,13 @@ using namespace std::string_literals;
 namespace KShimLib {
 #ifdef _WIN32
 #define KSTRING(X) L##X
+using char_t = wchar_t;
 using string = std::wstring;
 using string_view = std::wstring_view;
 using stringstream = std::wstringstream;
 #else
 #define KSTRING(X) X
+using char_t = char;
 using string = std::string;
 using string_view = std::string_view;
 using stringstream = std::stringstream;

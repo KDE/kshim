@@ -27,16 +27,16 @@ int main()
     TEST(absPath.is_absolute());
     TEST(KShimLib::path(absPath).is_absolute());
     TEST_EQ(absPath, KShimLib::path(KSTRING("C:\\foo\\bar.exe"s)));
-    TEST_EQ(path.wstring(), L"\\foo\\bar.txt"s);
-    TEST_EQ(path.string(), "\\foo\\bar.txt"s);
+    TEST_EQ(path.wstring(), L"/foo/bar.txt"s);
+    TEST_EQ(KShimLib::path(path).make_preferred().wstring(), L"\\foo\\bar.txt"s);
     TEST(KShimLib::path(KSTRING("C:\\"s)).is_absolute());
 #else
     const auto absPath = KShimLib::path(KSTRING("/foo/bar"s));
     TEST(absPath.is_absolute());
     TEST(KShimLib::path(absPath).is_absolute());
     TEST(KShimLib::path(KSTRING("/"s)).is_absolute());
-    TEST_EQ(path.string(), "/foo/bar.txt"s);
 #endif
+    TEST_EQ(path.string(), "/foo/bar.txt"s);
     TEST_EQ(KShimLib::path(KSTRING("../foo"s)).is_absolute(), false);
     TEST_EQ(KShimLib::path(KSTRING("foo"s)).is_absolute(), false);
     kLog << "End";
