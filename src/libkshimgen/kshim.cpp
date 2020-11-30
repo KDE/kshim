@@ -38,6 +38,7 @@
 #endif
 
 bool KLog::s_loggingEnabled = !KShimLib::getenv(KSTRING("KSHIM_LOG")).empty();
+bool KLog::s_stdLoggingEnabled = !KShimLib::getenv(KSTRING("KSHIM_LOG_STD")).empty();
 
 KLog::KLog(KLog::Type t) : m_type(t), m_stream(new KShimLib::stringstream) {}
 
@@ -48,46 +49,54 @@ KLog::~KLog()
     if (m_stream.use_count() == 1) {
         *this << "\n";
         const auto line = m_stream->str();
-        switch (m_type) {
-        case KLog::Type::Error:
-        case KLog::Type::Fatal:
+        if (s_stdLoggingEnabled) {
 #ifdef _WIN32
             std::wcerr << line;
 #else
             std::cerr << line;
 #endif
-        case KLog::Type::Debug: {
-            if (doLog()) {
-                static auto _log = [] {
-                    auto home = KShimLib::getenv(KSTRING("HOME"));
-                    if (home.empty()) {
-                        home = KShimLib::getenv(KSTRING("USERPROFILE"));
-                    }
-                    const auto logPath = KShimLib::path(home) / KSTRING(".kshim.log");
+        } else {
+            switch (m_type) {
+            case KLog::Type::Error:
+            case KLog::Type::Fatal:
+#ifdef _WIN32
+                std::wcerr << line << std::endl;;
+#else
+                std::cerr << line << std::endl;
+#endif
+            case KLog::Type::Debug: {
+                if (doLog()) {
+                    static auto _log = [] {
+                        auto home = KShimLib::getenv(KSTRING("HOME"));
+                        if (home.empty()) {
+                            home = KShimLib::getenv(KSTRING("USERPROFILE"));
+                        }
+                        const auto logPath = KShimLib::path(home) / KSTRING(".kshim.log");
 #ifdef _WIN32
 #if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
-                    const auto &_name = logPath;
+                        const auto &_name = logPath;
 #else
-                    const auto _name = logPath.string();
+                        const auto _name = logPath.string();
 #endif
-                    auto out = std::wofstream(_name, std::ios::app);
+                        auto out = std::wofstream(_name, std::ios::app);
 #else
-                    auto out = std::ofstream(logPath, std::ios::app);
+                        auto out = std::ofstream(logPath, std::ios::app);
 #endif
-                    if (!out.is_open()) {
-                        std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" "
-                                  << strerror(errno) << std::endl;
-                    }
-                    out << "----------------------------\n";
-                    return out;
-                }();
+                        if (!out.is_open()) {
+                            std::cerr << "KShim: Failed to open log \"" << logPath.string() << "\" "
+                                      << strerror(errno) << std::endl;
+                        }
+                        out << "----------------------------\n";
+                        return out;
+                    }();
 #ifdef _WIN32
-                OutputDebugStringW(line.data());
+                    OutputDebugStringW(line.data());
 #endif
-                _log << line;
-                _log.flush();
+                    _log << line;
+                    _log.flush();
+                }
             }
-        }
+            }
         }
     }
     if (m_type == Type::Fatal) {
@@ -109,6 +118,16 @@ KLog::Type KLog::type() const
 bool KLog::doLog() const
 {
     return loggingEnabled() || m_type != KLog::Type::Debug;
+}
+
+bool KLog::getStdLoggingEnabled()
+{
+    return s_stdLoggingEnabled;
+}
+
+void KLog::setStdLoggingEnabled(bool value)
+{
+    s_stdLoggingEnabled = value;
 }
 
 bool KLog::loggingEnabled()

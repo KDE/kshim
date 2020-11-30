@@ -60,12 +60,16 @@ public:
     static bool loggingEnabled();
     static void setLoggingEnabled(bool loggingEnabled);
 
+    static bool getStdLoggingEnabled();
+    static void setStdLoggingEnabled(bool value);
+
 private:
     bool doLog() const;
     Type m_type;
     std::shared_ptr<KShimLib::stringstream> m_stream;
 
     static bool s_loggingEnabled;
+    static bool s_stdLoggingEnabled;
 
     friend KLog &operator<<(KLog &log, const KShimLib::path &t);
     friend KLog &operator<<(KLog &log, const std::string &t);

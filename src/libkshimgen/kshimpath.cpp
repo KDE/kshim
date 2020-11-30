@@ -148,6 +148,9 @@ std::string KShimPath::string() const
 
 KShimPath::operator KShimLib::string() const
 {
+    if (empty()) {
+        return {};
+    }
     KShimLib::stringstream tmp;
     auto it = m_parts.cbegin();
     tmp << *it++;
