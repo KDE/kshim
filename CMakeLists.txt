@@ -6,6 +6,7 @@ set (CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 include(cmakerc/CMakeRC)
+include(CTest)
 
 set(FILESYSTEM_LIBS)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

@@ -58,13 +58,13 @@ bool KShimLib::exists(const KShimLib::path &path)
 KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
 {
     auto find = [](const std::wstring &dir, const KShimLib::path &name) {
-        const std::wstring ext = name.extension().empty() ? L".exe" : name.extension();
+        const std::wstring ext = name.extension().empty() ? L".exe" : std::wstring(name.extension());
         std::wstring buf;
         size_t size;
         wchar_t *filePart;
         size = SearchPathW(dir.data(), name.wstring().data(), ext.data(), 0, nullptr, &filePart);
         if (size == 0) {
-            return std::wstring();
+            return KShimLib::path();
         }
         buf.resize(size);
         size = SearchPathW(dir.data(), name.wstring().data(), ext.data(),
@@ -75,12 +75,12 @@ KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
                                      << buf.size() << " " << size;
         }
         buf.resize(size);
-        return buf;
+        return KShimLib::path(buf);
     };
     auto path_env = std::wstringstream(KShimLib::getenv(L"PATH"));
     std::wstring dir;
     while (std::getline(path_env, dir, L';')) {
-        auto tmp = find(dir, path.wstring());
+        auto tmp = find(dir, path);
         if (!tmp.empty() && tmp != KShimLib::binaryName()) {
             kLog << "Found: " << tmp << " for " << path;
             return tmp;

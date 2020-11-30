@@ -26,63 +26,102 @@
 #include "kshimpath.h"
 
 #include <algorithm>
+#include <sstream>
 
 #ifdef _WIN32
 #include <locale>
 #include <codecvt>
 #endif
 
+namespace  {
+constexpr auto UNIX_SEPERATOR(KSTRING('/'));
+#ifdef _WIN32
+constexpr auto NATIVE_SEPERATOR(KSTRING('\\'));
+#else
+constexpr char NATIVE_SEPERATOR(UNIX_SEPERATOR);
+#endif
+}
+
 KShimPath::KShimPath() {}
 
-KShimPath::KShimPath(const KShimLib::string &path) : m_path(path)
+KShimPath::KShimPath(const KShimLib::string &_path)
 {
+    auto path = _path;
 #ifdef _WIN32
-    std::replace(m_path.begin(), m_path.end(), '\\', '/');
+    std::replace(path.begin(), path.end(), NATIVE_SEPERATOR, UNIX_SEPERATOR);
 #endif
+    KShimLib::stringstream ps(path);
+    KShimLib::string part;
+    while(std::getline(ps, part, UNIX_SEPERATOR)) {
+        m_parts.push_back(part);
+    }
+    if (!empty()) {
+#ifdef _WIN32
+        m_is_abs = path.size() > 1 && path.at(1) == ':';
+#else
+        m_is_abs = path.at(0) == UNIX_SEPERATOR;
+#endif
+    }
 }
 KShimPath::KShimPath(const KShimLib::string_view &path) : KShimPath(KShimLib::string(path.data()))
 {
 }
 
-KShimPath::KShimPath(const KShimPath &path) : m_path(path.m_path) {}
+KShimPath::KShimPath(const KShimPath &path)
+    : m_parts(path.m_parts)
+    , m_is_abs(path.m_is_abs)
+{}
 
 bool KShimPath::is_absolute() const
 {
-#ifdef _WIN32
-    return m_path.size() > 1 && m_path.at(1) == ':';
-#else
-    return m_path.at(0) == '/';
-#endif
+    return m_is_abs;
 }
 
 KShimPath &KShimPath::replace_extension(const KShimPath &path)
 {
-    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it) {
-        const auto c = *it;
-        if (c == '/') {
-            break;
-        } else if (c == '.') {
-            const size_t pos = &*it - m_path.data();
-            m_path.erase(pos, m_path.size());
-            break;
-        }
+    KShimLib::string name = filename();
+
+    auto pos = name.rfind('.');
+    if (pos == KShimLib::string::npos)
+    {
+        name += path;
+    } else {
+        name = name.substr(0, pos) + KShimLib::string(path);
     }
-    m_path.append(path.m_path);
+    m_parts.pop_back();
+    m_parts.push_back(name);
     return *this;
 }
 
 KShimPath KShimPath::parent_path() const
 {
-    for (auto it = m_path.rbegin(); it != m_path.rend(); ++it) {
-        const auto c = *it;
-        if (c == '/') {
-            const size_t pos = &*it - m_path.data();
-            auto out = *this;
-            out.m_path.erase(pos);
-            return out;
-        }
+    KShimPath out = *this;
+    if (!out.m_parts.empty()) {
+        out.m_parts.pop_back();
+    }
+    return out;
+}
+
+KShimPath KShimPath::filename() const
+{
+    return m_parts.empty() ? KShimPath() : KShimPath(m_parts.back());
+}
+
+KShimPath KShimPath::extension() const
+{
+    KShimLib::string name = filename();
+
+    auto pos = name.rfind('.');
+    if (pos != KShimLib::string::npos)
+    {
+        return KShimPath(name.substr(pos));
     }
     return {};
+}
+
+bool KShimPath::empty() const
+{
+    return m_parts.empty();
 }
 
 #ifdef _WIN32
@@ -109,19 +148,21 @@ std::string KShimPath::string() const
 
 KShimPath::operator KShimLib::string() const
 {
-#ifdef _WIN32
-    auto out = m_path;
-    std::replace(out.begin(), out.end(), '/', '\\');
-    return out;
-#else
-    return m_path;
-#endif
+    KShimLib::stringstream tmp;
+    auto it = m_parts.cbegin();
+    tmp << *it++;
+    for(; it != m_parts.cend(); ++it) {
+        tmp << NATIVE_SEPERATOR << *it;
+    }
+    return tmp.str();
 }
 
 KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs)
 {
     auto out = lhs;
-    out.m_path += KSTRING("/"s) + rhs.m_path;
+    for(const auto &p : rhs.m_parts) {
+        out.m_parts.push_back(p);
+    }
     return out;
 }
 
@@ -132,5 +173,5 @@ KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs)
 
 bool operator==(const KShimPath &lhs, const KShimPath &rhs)
 {
-    return lhs.m_path == rhs.m_path;
+    return lhs.m_parts == rhs.m_parts;
 }

@@ -28,6 +28,8 @@
 
 #include "kshimstring.h"
 
+#include <vector>
+
 class KShimPath
 {
 public:
@@ -40,6 +42,10 @@ public:
 
     KShimPath &replace_extension(const KShimPath &path);
     KShimPath parent_path() const;
+    KShimPath filename() const;
+    KShimPath extension() const;
+
+    bool empty() const;
 
 #ifdef _WIN32
     std::wstring wstring() const;
@@ -48,15 +54,20 @@ public:
     operator KShimLib::string() const;
 
 private:
-    KShimLib::string m_path;
+    std::vector<KShimLib::string> m_parts;
+    bool m_is_abs = false;
 
     friend KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
     friend KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs);
     friend bool operator==(const KShimPath &lhs, const KShimPath &rhs);
+    friend bool operator!=(const KShimPath &lhs, const KShimPath &rhs);
 };
 
 KShimPath operator/(const KShimPath &lhs, const KShimPath &rhs);
 KShimPath operator/(const KShimPath &lhs, const KShimLib::string_view &rhs);
 bool operator==(const KShimPath &lhs, const KShimPath &rhs);
+inline bool operator!=(const KShimPath &lhs, const KShimPath &rhs) {
+    return !(lhs == rhs);
+}
 
 #endif // KSHIMPATH_H
