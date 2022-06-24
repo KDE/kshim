@@ -106,7 +106,16 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #else
-    KShimGenPrivate::updateIcon(shimData.appAbs(), name);
+    // we can't use shimData.appAbs() as it depends on the location of the current binary, which atm
+    // is kshimgen
+    auto src = shimData.app();
+    if (!src.is_absolute()) {
+        src = name.parent_path() / shimData.app();
+    }
+    if (!std::filesystem::exists(src)) {
+        src = KShimLib::findInPath(shimData.app());
+    }
+    KShimGenPrivate::updateIcon(src, name);
 #endif
     return true;
 }

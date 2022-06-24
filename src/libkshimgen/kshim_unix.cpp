@@ -132,7 +132,7 @@ KShimLib::string KShimLib::getenv(const KShimLib::string_view &var,
     return fallback.empty() ? "" : fallback.data();
 }
 
-KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
+KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
 {
     auto path_env = std::stringstream(KShimLib::getenv("PATH"));
     std::string dir;

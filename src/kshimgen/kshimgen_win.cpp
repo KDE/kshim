@@ -98,7 +98,7 @@ bool copyResource(HMODULE exe, HANDLE updateHandle, const wchar_t *id, const wch
         return false;
     }
     if (!UpdateResourceW(updateHandle, type, id, 1033, lock, SizeofResource(exe, iconPos))) {
-        kLog2(KLog::Type::Error) << "Failed to upload resource: " << printableRCType(type) << ": "
+        kLog2(KLog::Type::Error) << "Failed to update resource: " << printableRCType(type) << ": "
                                  << printableRCType(id);
         return false;
     }

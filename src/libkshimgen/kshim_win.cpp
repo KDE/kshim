@@ -55,7 +55,7 @@ bool KShimLib::exists(const KShimLib::path &path)
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-KShimLib::path KShimData::findInPath(const KShimLib::path &path) const
+KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
 {
     auto find = [](const std::wstring &dir, const KShimLib::path &name) {
         const std::wstring ext = name.extension().empty() ? L".exe" : std::wstring(name.extension());

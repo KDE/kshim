@@ -43,6 +43,8 @@ KShimLib::path binaryName();
 KShimLib::string getenv(const KShimLib::string_view &var,
                         const KShimLib::string_view &fallback = {});
 bool exists(const KShimLib::path &path);
+
+KShimLib::path findInPath(const KShimLib::path &path);
 }
 
 class KLog

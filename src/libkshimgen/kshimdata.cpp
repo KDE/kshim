@@ -158,7 +158,7 @@ KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const
             return tmp;
         }
     }
-    return findInPath(path);
+    return KShimLib::findInPath(path);
 }
 
 const std::vector<std::pair<KShimLib::string, KShimLib::string>> &KShimData::env() const
