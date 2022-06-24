@@ -112,7 +112,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
     if (!src.is_absolute()) {
         src = name.parent_path() / shimData.app();
     }
-    if (!std::filesystem::exists(src)) {
+    if (!KShimLib::exists(src)) {
         src = KShimLib::findInPath(shimData.app());
     }
     KShimGenPrivate::updateIcon(src, name);
