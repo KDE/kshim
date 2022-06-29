@@ -65,7 +65,7 @@ KShimLib::path KShimLib::binaryName()
 
 int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view> &args)
 {
-    for (auto var : data.env()) {
+    for (auto &var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
         if (var.second.empty()) {
             unsetenv(var.first.data());
@@ -73,17 +73,29 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
             setenv(var.first.data(), var.second.data(), true);
         }
     }
+
     std::vector<char *> arguments;
     auto addArg = [&arguments](const KShimLib::string_view &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
+
+    // copy to local scope to ensure lifetime
     const auto app = data.appAbs().string();
+    const auto internalArgs = data.args();
+    KShimLib::string fortamtArgs;
+
     addArg(app);
-    for (const auto &s : data.args()) {
-        addArg(s);
-    }
-    for (const auto &s : args) {
-        addArg(s);
+    if (data.isShellModeEnabled()) {
+        addArg(data.shellMode());
+        fortamtArgs = data.formatArgs(args);
+        addArg(fortamtArgs);
+    } else {
+        for (const auto &s : internalArgs) {
+            addArg(s);
+        }
+        for (const auto &s : args) {
+            addArg(s);
+        }
     }
     // the args need to end with a null pointer
     arguments.push_back(nullptr);
@@ -93,7 +105,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
         log << data.appAbs();
         for (const char *s : arguments) {
             if (s) {
-                log << " " << s;
+                log << " '" << s << "'";
             }
         }
     }

@@ -31,7 +31,8 @@ namespace KShimGen {
 int main(const std::vector<KShimLib::string_view> &args);
 bool createShim(const KShimLib::string_view &appName, const KShimLib::path &target,
                 const std::vector<KShimLib::string_view> &args,
-                const std::vector<KShimLib::string_view> &env, bool createGuiApplication);
+                const std::vector<KShimLib::string_view> &env, bool createGuiApplication,
+                const KShimLib::string_view &shellArg);
 }
 
 #endif // KSHIMGEN_H

@@ -68,6 +68,7 @@ KShimData::KShimData(const PayLoad &payLoad)
     }
     kLog << "Json Data: " << data.dump(4);
     m_app = KShimLib::path(data["app"].get<KShimLib::string>());
+    m_shellArg = data["shellArg"].get<KShimLib::string>();
     m_args = data["args"].get<std::vector<KShimLib::string>>();
     m_env = data["env"].get<std::vector<std::pair<KShimLib::string, KShimLib::string>>>();
 }
@@ -102,12 +103,27 @@ void KShimData::addArg(const KShimLib::string_view &arg)
     m_args.push_back(KShimLib::string(arg));
 }
 
+void KShimData::setShellMode(const KShimLib::string_view &shellArg)
+{
+    m_shellArg = shellArg;
+}
+
+KShimLib::string KShimData::shellMode() const
+{
+    return m_shellArg;
+}
+
+bool KShimData::isShellModeEnabled() const
+{
+    return !m_shellArg.empty();
+}
+
 KShimLib::string KShimData::formatCommand(const std::vector<KShimLib::string_view> &arguments) const
 {
     KShimLib::stringstream cmd;
     cmd <<
 #ifdef _WIN32
-            quote(appAbs().wstring())
+            KShimLib::quote(appAbs().wstring())
 #else
             quote(appAbs().string())
 #endif
@@ -117,9 +133,13 @@ KShimLib::string KShimData::formatCommand(const std::vector<KShimLib::string_vie
 
 KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string_view> &arguments) const
 {
-    KShimLib::stringstream cmd;
-    cmd << quoteArgs({ args().cbegin(), args().cend() }) << quoteArgs(arguments);
-    return cmd.str();
+    if (!args().empty()) {
+        KShimLib::stringstream cmd;
+        cmd << quoteArgs({ args().cbegin(), args().cend() }) << " " << quoteArgs(arguments);
+        return cmd.str();
+    } else {
+        return quoteArgs(arguments);
+    }
 }
 
 std::vector<uint8_t> KShimData::toJson() const
@@ -130,6 +150,7 @@ std::vector<uint8_t> KShimData::toJson() const
 #else
         { "app", app().string() },
 #endif
+        { "shellArg", shellMode() },
         { "args", args() },
         { "env", env() },
     };
@@ -225,8 +246,10 @@ KShimLib::string KShimData::quote(const KShimLib::string_view &arg) const
 KShimLib::string KShimData::quoteArgs(const std::vector<KShimLib::string_view> &args) const
 {
     KShimLib::stringstream command;
-    for (const auto &arg : args) {
-        command << " " << quote(arg);
+    auto it = args.cbegin();
+    command << *it++;
+    for (; it != args.cend(); ++it) {
+        command << " " << quote(*it);
     }
     return command.str();
 }

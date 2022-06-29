@@ -123,7 +123,8 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 
 bool KShimGen::createShim(const KShimLib::string_view &appName, const KShimLib::path &target,
                           const std::vector<KShimLib::string_view> &args,
-                          const std::vector<KShimLib::string_view> &_env, bool createGuiApplication)
+                          const std::vector<KShimLib::string_view> &_env, bool createGuiApplication,
+                          const KShimLib::string_view &shellArg)
 {
     std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> env;
     env.reserve(_env.size());
@@ -135,6 +136,7 @@ bool KShimGen::createShim(const KShimLib::string_view &appName, const KShimLib::
     KShimData shimData;
     shimData.setApp(target);
     shimData.setArgs(args);
+    shimData.setShellMode(shellArg);
     shimData.setEnv(env);
     const std::vector<char> binary = readBinary(createGuiApplication);
     if (!binary.empty()) {
@@ -147,21 +149,24 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
 {
     KShimLib::string_view target;
     KShimLib::string_view app;
+    KShimLib::string_view shellArg;
     std::vector<KShimLib::string_view> arguments;
     std::vector<KShimLib::string_view> env;
+
     bool gui = false;
 
-    auto help =
-            [](const KShimLib::string_view &msg) {
-                kLog2(KLog::Type::Error)
-                        << msg << "\n"
-                        << "--create shim target\t\t\tCreate a shim\n"
-                        << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+    auto help = [](const KShimLib::string_view &msg) {
+        kLog2(KLog::Type::Error)
+                << msg << "\n"
+                << "--create shim target\t\t\tCreate a shim\n"
+                << "--env    key=val\t\t\t\tadditional environment varriables for the shim\n"
 #ifdef _WIN32
-                        << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
+                << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
 #endif
-                        << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
-            };
+                << "--shell  shell_arg\t\t\t\t\tpass arguments as string, shell_arg is supposed to "
+                   "be '-c' for most interpreters\n"
+                << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+    };
     auto nextArg = [&](std::vector<KShimLib::string_view>::const_iterator &it,
                        const KShimLib::string_view &helpText) -> KShimLib::string_view {
         if (it != args.cend()) {
@@ -181,6 +186,8 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
             target = nextArg(it, msg);
         } else if (arg == KSTRING("--env")) {
             env.push_back(nextArg(it, KSTRING("--env key=val")));
+        } else if (arg == KSTRING("--shell")) {
+            shellArg = nextArg(it, KSTRING("--shell shell_arg"));
         } else if (arg == KSTRING("--")) {
             while (it != args.cend()) {
                 arguments.push_back(nextArg(it, KSTRING("")));
@@ -200,7 +207,7 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
         }
     }
     if (!target.empty()) {
-        return KShimGen::createShim(app, target, arguments, env, gui) ? 0 : -1;
+        return KShimGen::createShim(app, target, arguments, env, gui, shellArg) ? 0 : -1;
     }
     help(KSTRING(""));
     return -1;

@@ -57,6 +57,10 @@ public:
     void setArgs(const std::vector<KShimLib::string_view> &args);
     void addArg(const KShimLib::string_view &arg);
 
+    void setShellMode(const KShimLib::string_view &shellArg);
+    KShimLib::string shellMode() const;
+    bool isShellModeEnabled() const;
+
     const std::vector<std::pair<KShimLib::string, KShimLib::string>> &env() const;
     void setEnv(const std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> &env);
     void addEnvVar(const std::pair<KShimLib::string_view, KShimLib::string_view> &var);
@@ -72,6 +76,7 @@ private:
     KShimLib::path makeAbsouteCommand(const KShimLib::path &_path) const;
 
     KShimLib::path m_app;
+    KShimLib::string m_shellArg;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
 };
