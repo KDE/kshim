@@ -65,7 +65,7 @@ KShimLib::path KShimLib::binaryName()
 
 int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view> &args)
 {
-    for (auto var : data.env()) {
+    for (auto &var : data.env()) {
         kLog << "setenv: " << var.first << "=" << var.second;
         if (var.second.empty()) {
             unsetenv(var.first.data());

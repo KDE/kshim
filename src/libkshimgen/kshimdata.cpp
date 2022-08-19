@@ -52,7 +52,7 @@ Format KSHIM_DATA_FORMAT()
 }
 }
 
-KShimData::KShimData() {}
+KShimData::KShimData(const KShimLib::path &app) : m_app(app) { }
 
 KShimData::KShimData(const PayLoad &payLoad)
 {

@@ -46,7 +46,8 @@ public:
         inline const uint8_t *cend() const { return cmd + size; }
     };
 
-    KShimData();
+    KShimData() = default;
+    KShimData(const KShimLib::path &app);
     KShimData(const PayLoad &payLoad);
 
     KShimLib::path app() const;

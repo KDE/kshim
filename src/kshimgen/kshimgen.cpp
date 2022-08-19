@@ -105,6 +105,13 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#if __APPLE__
+    const int result = KShimLib::run(KShimData("codesign"), { "-s", "-", name.string() });
+    if (result != 0) {
+        kLog << "Faied to sign" << name.string() << "exit code:" << result;
+        return false;
+    }
+#endif
 #else
     // we can't use shimData.appAbs() as it depends on the location of the current binary, which atm
     // is kshimgen
