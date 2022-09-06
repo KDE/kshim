@@ -106,7 +106,8 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #if __APPLE__
-    const int result = KShimLib::run(KShimData("codesign"), { "-s", "-", name.string() });
+    const auto codesign = KShimLib::findInPath(KShimLib::path(KShimLib::string("codesign")));
+    const int result = KShimLib::run(KShimData(codesign), { "-s", "-", name.string() });
     if (result != 0) {
         kLog << "Faied to sign" << name.string() << "exit code:" << result;
         return false;
