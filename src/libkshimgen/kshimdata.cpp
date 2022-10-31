@@ -54,9 +54,9 @@ Format KSHIM_DATA_FORMAT()
 
 KShimData::KShimData(const KShimLib::path &app) : m_app(app) { }
 
-KShimData::KShimData(const PayLoad &payLoad)
+KShimData::KShimData(const std::vector<uint8_t> &payLoad)
 {
-    kLog << "PayLoad Size: " << payLoad.size;
+    kLog << "PayLoad Size: " << payLoad.size();
     json data;
     switch (KSHIM_DATA_FORMAT()) {
     case Format::Json:

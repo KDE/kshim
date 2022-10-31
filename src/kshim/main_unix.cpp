@@ -25,8 +25,13 @@
 
 #include "kshim.h"
 #include "kshimmain.h"
+#include "kshimdata.h"
 
 #include <vector>
+
+namespace {
+static KShimPayLoad StartupCommand { 0, KShimDataDef };
+}
 
 int main(int argc, char *argv[])
 {
@@ -35,5 +40,6 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::main(args);
+
+    return KShim::main({ StartupCommand.cmd, StartupCommand.cmd + StartupCommand.size }, args);
 }

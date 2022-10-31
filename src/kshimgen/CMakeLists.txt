@@ -2,7 +2,7 @@ add_executable(kshimgen kshimgen.cpp)
 if (WIN32)
     target_sources(kshimgen PRIVATE main_win.cpp kshimgen_win.cpp)
 else()
-    target_sources(kshimgen PRIVATE main_unix.cpp)
+    target_sources(kshimgen PRIVATE main_unix.cpp kshimgen_unix.cpp)
 endif()
 target_link_libraries(kshimgen PRIVATE libkshimgen kshim_embedded_resource)
 

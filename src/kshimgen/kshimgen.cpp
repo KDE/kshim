@@ -64,20 +64,11 @@ std::vector<char> readBinary(bool createGuiApplication)
     return std::vector<char>(binary.begin(), binary.end());
 }
 
-bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const std::vector<char> &binary)
+bool writeBinary(const KShimLib::path &name, const KShimData &shimData,
+                 const std::vector<char> &binary)
 {
     std::vector<char> dataOut = binary;
 
-    // look for the end mark and search for the start from there
-    const KShimData::PayLoad findPayLoad { 0, KShimDataDef };
-    const char *_start = reinterpret_cast<const char *>(&findPayLoad);
-    auto cmdIt =
-            search(dataOut.begin(), dataOut.end(), _start, _start + sizeof(KShimData::PayLoad));
-    if (cmdIt == dataOut.end()) {
-        kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
-        exit(1);
-    }
-    KShimData::PayLoad *outPayLoad = reinterpret_cast<KShimData::PayLoad *>(&*cmdIt);
 #if KSHIM_HAS_FILESYSTEM
     const auto &_name = name;
 #elif defined(__MINGW32__)
@@ -85,23 +76,19 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
 #else
     const auto _name = KShimLib::string(name);
 #endif
-    std::ofstream out(_name, std::ios::out | std::ios::binary);
-    if (!out.is_open()) {
-        kLog2(KLog::Type::Error) << "Failed to open out: " << name;
-        return false;
+    {
+        std::ofstream out(_name, std::ios::out | std::ios::binary);
+        if (!out.is_open()) {
+            kLog2(KLog::Type::Error) << "Failed to open out: " << name;
+            return false;
+        }
+        out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
+
+        kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
+        out.close();
     }
-    const std::vector<uint8_t> json = shimData.toJson();
-    if (json.size() > KShimLib::DataStorageSize) {
-        kLog2(KLog::Type::Error) << "Data buffer is too small " << json.size() << " > "
-                                 << KShimLib::DataStorageSize << " :\n"
-                                 << json.data();
-        return false;
-    }
-    outPayLoad->size = json.size();
-    std::copy(json.cbegin(), json.cend(), outPayLoad->cmd);
-    out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
-    kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
-    out.close();
+
+    KShimGenPrivate::setPayload(name, shimData.toJson());
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -114,8 +101,8 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData, const st
     }
 #endif
 #else
-    // we can't use shimData.appAbs() as it depends on the location of the current binary, which atm
-    // is kshimgen
+    // we can't use shimData.appAbs() as it depends on the location of the current binary, which
+    // atm is kshimgen
     auto src = shimData.app();
     if (!src.is_absolute()) {
         src = name.parent_path() / shimData.app();
