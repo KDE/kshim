@@ -24,7 +24,12 @@
 */
 #pragma once
 #include "kshim.h"
+#include "kshimdata.h"
 
 namespace KShimGenPrivate {
+/***
+ * Updat the icon in dest with the icons from src
+ */
 void updateIcon(const KShimLib::path &src, const KShimLib::path &dest);
+void setPayload(const KShimLib::path &dest, const std::vector<uint8_t> &payload);
 }

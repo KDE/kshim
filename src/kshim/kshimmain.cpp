@@ -25,16 +25,11 @@
 #include "kshimmain.h"
 #include "kshimdata.h"
 
-namespace {
-static KShimData::PayLoad StartupCommand { 0, KShimDataDef };
-}
-
-int KShim::main(const std::vector<KShimLib::string_view> &args)
+int KShim::main(const std::vector<uint8_t> &payload, const std::vector<KShimLib::string_view> &args)
 {
-    const KShimData data(StartupCommand);
     // crop the shim name from the args
     const auto tmp = std::vector<KShimLib::string_view>(args.cbegin() + 1, args.cend());
-    const int out = KShimLib::run(data, tmp);
+    const int out = KShimLib::run(payload, tmp);
     kLog << "Exit: " << out;
     return out;
 }

@@ -25,6 +25,9 @@
 #include "kshimgen_p.h"
 
 #include <windows.h>
+#include <comdef.h>
+
+#include <filesystem>
 
 namespace {
 
@@ -54,6 +57,14 @@ typedef struct
 } GRPICONDIR;
 #pragma pack(pop)
 
+struct KShimResource
+{
+    void *resourceLock = nullptr;
+    uint64_t size = 0;
+    wchar_t *id;
+    wchar_t *type;
+};
+
 std::wstring printableRCType(const wchar_t *type)
 {
     if (IS_INTRESOURCE(type)) {
@@ -76,34 +87,29 @@ BOOL CALLBACK resourceCallback(HMODULE, wchar_t *, wchar_t *name, intptr_t *cont
     return false;
 }
 
-bool copyResource(HMODULE exe, HANDLE updateHandle, const wchar_t *id, const wchar_t *type)
+void updateResources(const KShimLib::path &dest, const std::vector<KShimResource> &resources)
 {
-    auto iconPos = FindResourceW(exe, id, type);
-    if (!iconPos) {
-        kLog2(KLog::Type::Error) << "Failed to find resource: " << printableRCType(type) << ": "
-                                 << printableRCType(id);
-        return false;
+    auto updateHandle = BeginUpdateResourceW(dest.wstring().data(), false);
+    if (!updateHandle) {
+        kLog2(KLog::Type::Error) << "Failed to BeginUpdateResource: " << dest;
+        exit(1);
     }
-    auto icon = LoadResource(exe, iconPos);
-    if (!icon) {
-        kLog2(KLog::Type::Error) << "Failed to load resource: " << printableRCType(type) << ": "
-                                 << printableRCType(id);
-        return false;
+    for (const auto &resource : resources) {
+        if (resource.resourceLock) {
+            if (!UpdateResourceW(updateHandle, resource.type, resource.id, 1033,
+                                 resource.resourceLock, resource.size)) {
+                kLog2(KLog::Type::Error)
+                        << "Failed to update resource: " << printableRCType(resource.type) << ": "
+                        << printableRCType(resource.id);
+                exit(1);
+            }
+        }
     }
-    auto lock = LockResource(icon);
-    if (!lock) {
-
-        kLog2(KLog::Type::Error) << "Failed to lock resource: " << printableRCType(type) << ": "
-                                 << printableRCType(id);
-        return false;
+    if (!EndUpdateResourceW(updateHandle, false)) {
+        kLog2(KLog::Type::Error) << "Failed to EndUpdateResource: " << dest;
+        exit(1);
     }
-    if (!UpdateResourceW(updateHandle, type, id, 1033, lock, SizeofResource(exe, iconPos))) {
-        kLog2(KLog::Type::Error) << "Failed to update resource: " << printableRCType(type) << ": "
-                                 << printableRCType(id);
-        return false;
-    }
-    return true;
-};
+}
 }
 namespace KShimGenPrivate {
 
@@ -139,23 +145,39 @@ void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
         if (!info) {
             kLog2(KLog::Type::Error) << "Failed to load icon info";
         } else {
-            auto updateHandle = BeginUpdateResourceW(dest.wstring().data(), false);
-            if (!updateHandle) {
-                kLog2(KLog::Type::Error) << "Failed to BeginUpdateResource: " << src;
-                exit(1);
-            }
-            copyResource(exe, updateHandle, iconGroupName, RT_GROUP_ICON);
+            auto getResource = [&exe](wchar_t *id, wchar_t *type) -> KShimResource {
+                auto iconPos = FindResourceW(exe, id, type);
+                if (!iconPos) {
+                    kLog2(KLog::Type::Error) << "Failed to find resource: " << printableRCType(type)
+                                             << ": " << printableRCType(id);
+                    return {};
+                }
+                auto icon = LoadResource(exe, iconPos);
+                if (!icon) {
+                    kLog2(KLog::Type::Error) << "Failed to load resource: " << printableRCType(type)
+                                             << ": " << printableRCType(id);
+                    return {};
+                }
+                auto lock = LockResource(icon);
+                if (!lock) {
+
+                    kLog2(KLog::Type::Error) << "Failed to lock resource: " << printableRCType(type)
+                                             << ": " << printableRCType(id);
+                    return {};
+                }
+                return { lock, SizeofResource(exe, iconPos), id, type };
+            };
+            std::vector<KShimResource> resources;
+            resources.reserve(info->idCount + 1);
+            resources.push_back(getResource(iconGroupName, RT_GROUP_ICON));
             for (int64_t i = 0; i < info->idCount; ++i) {
-                copyResource(exe, updateHandle, MAKEINTRESOURCEW(info->idEntries[i].nID), RT_ICON);
+                resources.push_back(getResource(MAKEINTRESOURCEW(info->idEntries[i].nID), RT_ICON));
             }
+            updateResources(dest, resources);
             kLog << "Copied: " << info->idCount << " icons";
 
             if (!IS_INTRESOURCE(iconGroupName)) {
                 delete[] iconGroupName;
-            }
-            if (!EndUpdateResourceW(updateHandle, false)) {
-                kLog2(KLog::Type::Error) << "Failed to EndUpdateResource: " << src;
-                exit(1);
             }
         }
     }
@@ -165,4 +187,8 @@ void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
     }
 }
 
+void setPayload(const KShimLib::path &dest, const std::vector<uint8_t> &payload)
+{
+    updateResources(dest, { { (void *)payload.data(), payload.size(), L"PAYLOAD", L"KSHIM" } });
+}
 }

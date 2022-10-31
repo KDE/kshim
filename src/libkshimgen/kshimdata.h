@@ -32,23 +32,23 @@
 #include <string>
 #include <vector>
 
+#ifndef WIN32
+// don't make const to prevent optimisation
+struct KShimPayLoad
+{
+    // an initialised data array starts with an size_t with the size of the payload
+    // followed by the formated payload
+    size_t size;
+    uint8_t cmd[KShimLib::DataStorageSize];
+};
+#endif
+
 class KShimData
 {
 public:
-    // don't make const to prevent optimisation
-    struct PayLoad
-    {
-        // an initialised data array starts with an size_t with the size of the payload
-        // followed by the formated payload
-        size_t size;
-        uint8_t cmd[KShimLib::DataStorageSize];
-        inline const uint8_t *cbegin() const { return cmd; }
-        inline const uint8_t *cend() const { return cmd + size; }
-    };
-
     KShimData() = default;
     KShimData(const KShimLib::path &app);
-    KShimData(const PayLoad &payLoad);
+    KShimData(const std::vector<uint8_t> &payLoad);
 
     KShimLib::path app() const;
     KShimLib::path appAbs() const;

@@ -25,6 +25,7 @@
 
 #include "kshim.h"
 #include "kshimmain.h"
+#include "kshimdata.h"
 
 #include <windows.h>
 #include <shellapi.h>
@@ -40,7 +41,12 @@ int _main()
     for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
         args[i] = argv[i];
     }
-    return KShim::main(args);
+
+    // global handle, don't free
+    auto handle = FindResourceW(nullptr, L"PAYLOAD", L"KSHIM");
+    auto payload = reinterpret_cast<uint8_t *>(LockResource(LoadResource(nullptr, handle)));
+
+    return KShim::main({ payload, payload + SizeofResource(nullptr, handle) }, args);
 }
 
 int main()
