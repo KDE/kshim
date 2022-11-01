@@ -43,8 +43,8 @@ int _main()
     }
 
     // global handle, don't free
-    auto handle = FindResourceW(nullptr, L"PAYLOAD", L"KSHIM");
-    auto payload = reinterpret_cast<uint8_t *>(LockResource(LoadResource(nullptr, handle)));
+    const auto handle = FindResourceW(nullptr, KShimLib::PayLoadKey.data(), KShimLib::PayloadCategory.data());
+    const auto payload = static_cast<uint8_t *>(LockResource(LoadResource(nullptr, handle)));
 
     return KShim::main({ payload, payload + SizeofResource(nullptr, handle) }, args);
 }

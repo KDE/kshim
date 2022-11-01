@@ -61,8 +61,8 @@ struct KShimResource
 {
     void *resourceLock = nullptr;
     uint64_t size = 0;
-    wchar_t *id;
-    wchar_t *type;
+    const wchar_t *id;
+    const wchar_t *type;
 };
 
 std::wstring printableRCType(const wchar_t *type)
@@ -189,6 +189,6 @@ void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
 
 void setPayload(const KShimLib::path &dest, const std::vector<uint8_t> &payload)
 {
-    updateResources(dest, { { (void *)payload.data(), payload.size(), L"PAYLOAD", L"KSHIM" } });
+    updateResources(dest, { { (void *)payload.data(), payload.size(), KShimLib::PayLoadKey.data(), KShimLib::PayloadCategory.data() } });
 }
 }
