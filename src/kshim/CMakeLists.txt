@@ -1,3 +1,16 @@
+
+function(add_shim target file)
+    if(NOT MSVC)
+        if (APPLE)
+            add_custom_command(TARGET ${target} POST_BUILD COMMAND strip -x -S "$<TARGET_FILE:${target}>")
+        else()
+            add_custom_command(TARGET ${target} POST_BUILD COMMAND strip --strip-debug --strip-unneeded "$<TARGET_FILE:${target}>")
+        endif()
+    endif()
+    add_custom_command(OUTPUT ${file} DEPENDS ${target})
+    cmrc_add_resources(kshim_embedded_resource ${file} WHENCE ${PROJECT_BINARY_DIR})
+endfunction()
+
 set(KSHIM_SRC kshimmain.cpp)
 
 if (WIN32)
@@ -6,22 +19,20 @@ else()
     list(APPEND KSHIM_SRC main_unix.cpp)
 endif()
 
-add_executable(kshim ${KSHIM_SRC})
-target_link_libraries(kshim libkshimgen)
-# TODO: get target name
-add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/bin/kshim${CMAKE_EXECUTABLE_SUFFIX} DEPENDS kshim)
-
 cmrc_add_resource_library(kshim_embedded_resource
-    ${PROJECT_BINARY_DIR}/bin/kshim${CMAKE_EXECUTABLE_SUFFIX}
     NAMESPACE KShimEmbeddeResource
     WHENCE ${PROJECT_BINARY_DIR})
+
+add_executable(kshim ${KSHIM_SRC})
+target_link_libraries(kshim libkshimgen)
+add_shim(kshim ${PROJECT_BINARY_DIR}/bin/kshim${CMAKE_EXECUTABLE_SUFFIX})
+
+
 
 if (WIN32)
     add_executable(kshimgui WIN32 ${KSHIM_SRC})
     target_link_libraries(kshimgui libkshimgen)
-    # TODO: get target name
-    add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/bin/kshimgui${CMAKE_EXECUTABLE_SUFFIX} DEPENDS kshimgui)
-    cmrc_add_resources(kshim_embedded_resource ${PROJECT_BINARY_DIR}/bin/kshimgui${CMAKE_EXECUTABLE_SUFFIX} WHENCE ${PROJECT_BINARY_DIR})
+    add_shim(kshimgui ${PROJECT_BINARY_DIR}/bin/kshimgui${CMAKE_EXECUTABLE_SUFFIX})
 endif()
 
 
