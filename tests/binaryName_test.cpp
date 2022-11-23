@@ -10,7 +10,9 @@ int main()
     KLog::setLoggingEnabled(true);
     KLog::setStdLoggingEnabled(true);
     const auto binaryName = KShimLib::binaryName();
-    TEST_EQ(binaryName, KShimLib::path(BINARY_DIR "/binaryName_test"));
+    TEST_EQ(binaryName,
+            KShimLib::path(std::string(BINARY_DIR "/binaryName_test")
+                           + std::string(KShimLib::exeSuffix)));
     kLog << "End";
     return 0;
 }
