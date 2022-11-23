@@ -36,6 +36,14 @@
 #include <libproc.h>
 #endif
 
+#ifdef __FreeBSD__
+#include <kvm.h>
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <sys/user.h>
+#include <libprocstat.h>
+#endif
+
 extern char **environ;
 
 KShimLib::path KShimLib::binaryName()
@@ -45,6 +53,20 @@ KShimLib::path KShimLib::binaryName()
 #if __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
         size = proc_pidpath(getpid(), const_cast<char *>(out.data()), out.size());
+#elif defined(__FreeBSD__)
+        string out(PATH_MAX, 0);
+        int error, name[4];
+        size_t len = PATH_MAX;
+
+        name[0] = CTL_KERN;
+        name[1] = KERN_PROC;
+        name[2] = KERN_PROC_PATHNAME;
+        name[3] = getpid();
+
+        error = sysctl(name, nitems(name), const_cast<char *>(out.data()), &len, NULL, 0);
+        len--; // cut off zero-terminator
+        out.resize(len);
+        size = len;
 #else
         string out;
         do {
