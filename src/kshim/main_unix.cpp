@@ -30,7 +30,7 @@
 #include <vector>
 
 namespace {
-static KShimPayLoad StartupCommand { 0, KShimDataDef };
+static volatile KShimPayLoad StartupCommand { 0, KShimDataDef };
 }
 
 int main(int argc, char *argv[])
