@@ -7,4 +7,8 @@ add_test(TestPathLib ${CMAKE_BINARY_DIR}/bin/path_test)
 
 add_executable(binaryName_test binaryName_test.cpp)
 target_link_libraries(binaryName_test libkshimgen)
-add_test(TestBinaryNameLib ${CMAKE_BINARY_DIR}/bin/binaryName_test)
+add_test(TestBinaryName ${CMAKE_BINARY_DIR}/bin/binaryName_test)
+
+add_executable(createShim_test createShim_test.cpp)
+target_link_libraries(createShim_test libkshimgen)
+add_test(TestCreateShim ${CMAKE_BINARY_DIR}/bin/createShim_test)
