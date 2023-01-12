@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(KShim LANGUAGES CXX VERSION 0.5.4)
+project(KShim LANGUAGES CXX VERSION 0.5.5)
 set (CMAKE_CXX_STANDARD_REQUIRED 17)
 set (CMAKE_CXX_STANDARD 17)
 
