@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
+cmake_policy(SET CMP0056 NEW)
 
 project(KShim LANGUAGES CXX VERSION 0.5.5)
 set (CMAKE_CXX_STANDARD_REQUIRED 17)
@@ -33,7 +34,13 @@ if(MSVC)
             string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
     endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
 elseif(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    set(CMAKE_EXE_LINKER_FLAGS_OLD ${CMAKE_EXE_LINKER_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS ${MAKE_EXE_LINKER_FLAGS} -static )
+    try_compile(HAS_STATIC_RUNTIME ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_static_runtime.cpp)
+    if (NOT HAS_STATIC_RUNTIME)
+        message(STATUS "Failed to compile using static runtime, using dynamic runtime")
+        set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS_OLD})
+    endif()
 endif()
 
 
