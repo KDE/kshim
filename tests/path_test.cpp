@@ -1,9 +1,4 @@
-#include "kshim.h"
-
-#include <assert.h>
-
-#define TEST(X) kLog << #X ": " << (X ? "true":"false"); if (!X) { kLog2(KLog::Type::Fatal) << "Failed";}
-#define TEST_EQ(X, Y) kLog << #X  "==" #Y ": " <<  X << "==" << Y; if(X != Y) { kLog2(KLog::Type::Fatal)<< "Failed";}
+#include "test_config.h"
 
 int main()
 {
