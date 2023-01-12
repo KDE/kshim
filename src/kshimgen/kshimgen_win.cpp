@@ -97,7 +97,7 @@ void updateResources(const KShimLib::path &dest, const std::vector<KShimResource
     for (const auto &resource : resources) {
         if (resource.resourceLock) {
             if (!UpdateResourceW(updateHandle, resource.type, resource.id, 1033,
-                                 resource.resourceLock, resource.size)) {
+                                 resource.resourceLock, static_cast<DWORD>(resource.size))) {
                 kLog2(KLog::Type::Error)
                         << "Failed to update resource: " << printableRCType(resource.type) << ": "
                         << printableRCType(resource.id);
