@@ -9,6 +9,17 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
 include(cmakerc/CMakeRC)
 include(CTest)
 
+find_package(ECM 5.50.0 QUIET NO_MODULE)
+if(ECM_FOUND)
+    set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_MODULE_PATH})
+    include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
+else()
+    # enable more warnings
+    if(MSVC)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4" )
+    endif()
+endif()
+
 set(FILESYSTEM_LIBS)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(FILESYSTEM_LIBS stdc++fs)
@@ -32,11 +43,6 @@ endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
-# enable more warnings
-if(MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4" )
-endif()
 
 add_subdirectory(src)
 
