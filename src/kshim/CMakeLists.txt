@@ -20,6 +20,7 @@ else()
 endif()
 
 cmrc_add_resource_library(kshim_embedded_resource
+    TYPE OBJECT
     NAMESPACE KShimEmbeddeResource
     WHENCE ${PROJECT_BINARY_DIR})
 
@@ -34,9 +35,3 @@ if (WIN32)
     target_link_libraries(kshimgui libkshimgen)
     add_shim(kshimgui ${PROJECT_BINARY_DIR}/bin/kshimgui${CMAKE_EXECUTABLE_SUFFIX})
 endif()
-
-
-
-
-
-
