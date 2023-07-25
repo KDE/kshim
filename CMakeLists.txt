@@ -14,20 +14,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(FILESYSTEM_LIBS stdc++fs)
 endif()
 
-try_compile(KSHIM_HAS_FILESYSTEM ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_filesystem.cpp
-    CXX_STANDARD 17
-    LINK_LIBRARIES ${FILESYSTEM_LIBS}
-    OUTPUT_VARIABLE KSHIM_HAS_FILESYSTEM_LOG
-    )
-
-if (KSHIM_HAS_FILESYSTEM)
-    message(STATUS "Using std::filesystem")
-else()
-    message(STATUS "Using minimal replacement for std::filesystem")
-    #message(STATUS "${KSHIM_HAS_FILESYSTEM_LOG}")
-endif()
-
 #link runtime static
 if(MSVC)
     foreach(_bt RELEASE RELWITHDEBINFO)

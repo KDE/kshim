@@ -46,9 +46,9 @@
 
 extern char **environ;
 
-KShimLib::path KShimLib::binaryName()
+std::filesystem::path KShimLib::binaryName()
 {
-    static KShimLib::path _path = [] {
+    static std::filesystem::path _path = [] {
         size_t size;
 #if __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
@@ -80,7 +80,7 @@ KShimLib::path KShimLib::binaryName()
             kLog2(KLog::Type::Error) << "Failed to locate shimgen";
             exit(1);
         }
-        return KShimLib::path(out);
+        return std::filesystem::path(out);
     }();
     return _path;
 }
@@ -154,12 +154,12 @@ KShimLib::string KShimLib::getenv(const KShimLib::string_view &var,
     return fallback.empty() ? "" : fallback.data();
 }
 
-KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
+std::filesystem::path KShimLib::findInPath(const std::filesystem::path &path)
 {
     auto path_env = std::stringstream(KShimLib::getenv("PATH"));
     std::string dir;
     while (std::getline(path_env, dir, ':')) {
-        const auto file = KShimLib::path(dir) / path;
+        const auto file = std::filesystem::path(dir) / path;
         if (file != KShimLib::binaryName()) {
             struct stat sb;
             if (stat(file.string().data(), &sb) == 0 && sb.st_mode & S_IXUSR) {
@@ -172,7 +172,7 @@ KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
     return {};
 }
 
-bool KShimLib::exists(const KShimLib::path &path)
+bool KShimLib::exists(const std::filesystem::path &path)
 {
     struct stat sb;
     return stat(path.string().data(), &sb) == 0;

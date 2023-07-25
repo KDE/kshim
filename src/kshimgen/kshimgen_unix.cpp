@@ -26,7 +26,8 @@
 
 #include <algorithm>
 
-void KShimGenPrivate::setPayload(const KShimLib::path &dest, const std::vector<uint8_t> &payload)
+void KShimGenPrivate::setPayload(const std::filesystem::path &dest,
+                                 const std::vector<uint8_t> &payload)
 {
     std::vector<char> dataOut;
     {

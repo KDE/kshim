@@ -24,7 +24,6 @@
 */
 
 #include "kshim.h"
-#include "kshimpath.h"
 #include "kshimdata.h"
 
 #include <algorithm>
@@ -71,9 +70,9 @@ KLog::~KLog()
                         if (home.empty()) {
                             home = KShimLib::getenv(KSTRING("USERPROFILE"));
                         }
-                        const auto logPath = KShimLib::path(home) / KSTRING(".kshim.log");
+                        const auto logPath = std::filesystem::path(home) / KSTRING(".kshim.log");
 #ifdef _WIN32
-#if KSHIM_HAS_FILESYSTEM || !defined(__MINGW32__)
+#if !defined(__MINGW32__)
                         const auto &_name = logPath;
 #else
                         const auto _name = logPath.string();
@@ -140,7 +139,7 @@ void KLog::setLoggingEnabled(bool loggingEnabled)
     s_loggingEnabled = loggingEnabled;
 }
 
-KLog &operator<<(KLog &log, const KShimLib::path &t)
+KLog &operator<<(KLog &log, const std::filesystem::path &t)
 {
 #ifdef _WIN32
     log << t.wstring();

@@ -35,16 +35,18 @@
 #include <vector>
 #include <memory>
 
+#include <filesystem>
+
 class KShimData;
 
 namespace KShimLib {
 int run(const KShimData &data, const std::vector<KShimLib::string_view> &args);
-KShimLib::path binaryName();
+std::filesystem::path binaryName();
 KShimLib::string getenv(const KShimLib::string_view &var,
                         const KShimLib::string_view &fallback = {});
-bool exists(const KShimLib::path &path);
+bool exists(const std::filesystem::path &path);
 
-KShimLib::path findInPath(const KShimLib::path &path);
+std::filesystem::path findInPath(const std::filesystem::path &path);
 }
 
 class KLog
@@ -73,7 +75,7 @@ private:
     static bool s_loggingEnabled;
     static bool s_stdLoggingEnabled;
 
-    friend KLog &operator<<(KLog &log, const KShimLib::path &t);
+    friend KLog &operator<<(KLog &log, const std::filesystem::path &t);
     friend KLog &operator<<(KLog &log, const std::string &t);
 
     template<typename T>
@@ -82,7 +84,7 @@ private:
 #define kLog KLog(KLog::Type::Debug).log()
 #define kLog2(X) KLog(X).log()
 
-KLog &operator<<(KLog &log, const KShimLib::path &t);
+KLog &operator<<(KLog &log, const std::filesystem::path &t);
 KLog &operator<<(KLog &log, const std::string &t);
 
 template<typename T>

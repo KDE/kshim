@@ -27,7 +27,6 @@
 #define KSHIMDATA_H
 
 #include "kshim.h"
-#include "kshimpath.h"
 
 #include <string>
 #include <vector>
@@ -47,12 +46,12 @@ class KShimData
 {
 public:
     KShimData() = default;
-    KShimData(const KShimLib::path &app);
+    KShimData(const std::filesystem::path &app);
     KShimData(const std::vector<uint8_t> &payLoad);
 
-    KShimLib::path app() const;
-    KShimLib::path appAbs() const;
-    void setApp(const KShimLib::path &app);
+    std::filesystem::path app() const;
+    std::filesystem::path appAbs() const;
+    void setApp(const std::filesystem::path &app);
 
     const std::vector<KShimLib::string> &args() const;
     void setArgs(const std::vector<KShimLib::string_view> &args);
@@ -70,9 +69,9 @@ public:
 private:
     KShimLib::string quote(const KShimLib::string_view &arg) const;
     KShimLib::string quoteArgs(const std::vector<KShimLib::string_view> &args) const;
-    KShimLib::path makeAbsouteCommand(const KShimLib::path &_path) const;
+    std::filesystem::path makeAbsouteCommand(const std::filesystem::path &_path) const;
 
-    KShimLib::path m_app;
+    std::filesystem::path m_app;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
 };

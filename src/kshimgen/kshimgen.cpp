@@ -38,10 +38,10 @@ CMRC_DECLARE(KShimEmbeddeResource);
 
 namespace {
 
-KShimLib::path normaliseApplicationName(const KShimLib::path &app)
+std::filesystem::path normaliseApplicationName(const std::filesystem::path &app)
 {
 #ifdef _WIN32
-    KShimLib::path out = app;
+    std::filesystem::path out = app;
     out.replace_extension(KShimLib::exeSuffixW);
     return out;
 #else
@@ -64,18 +64,12 @@ std::vector<char> readBinary(bool createGuiApplication)
     return std::vector<char>(binary.begin(), binary.end());
 }
 
-bool writeBinary(const KShimLib::path &name, const KShimData &shimData,
+bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
                  const std::vector<char> &binary)
 {
     std::vector<char> dataOut = binary;
 
-#if KSHIM_HAS_FILESYSTEM
     const auto &_name = name;
-#elif defined(__MINGW32__)
-    const auto _name = name.string();
-#else
-    const auto _name = KShimLib::string(name);
-#endif
     {
         std::ofstream out(_name, std::ios::out | std::ios::binary);
         if (!out.is_open()) {
@@ -93,7 +87,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData,
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #if __APPLE__
-    const auto codesign = KShimLib::findInPath(KShimLib::path(KShimLib::string("codesign")));
+    const auto codesign = KShimLib::findInPath(std::filesystem::path(KShimLib::string("codesign")));
     const int result = KShimLib::run(KShimData(codesign), { "-s", "-", name.string() });
     if (result != 0) {
         kLog << "Faied to sign" << name.string() << "exit code:" << result;
@@ -116,7 +110,7 @@ bool writeBinary(const KShimLib::path &name, const KShimData &shimData,
 }
 }
 
-bool KShimGen::createShim(const KShimLib::string_view &appName, const KShimLib::path &target,
+bool KShimGen::createShim(const KShimLib::string_view &appName, const std::filesystem::path &target,
                           const std::vector<KShimLib::string_view> &args,
                           const std::vector<KShimLib::string_view> &_env, bool createGuiApplication)
 {

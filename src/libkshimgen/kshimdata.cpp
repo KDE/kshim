@@ -52,7 +52,7 @@ Format KSHIM_DATA_FORMAT()
 }
 }
 
-KShimData::KShimData(const KShimLib::path &app) : m_app(app) { }
+KShimData::KShimData(const std::filesystem::path &app) : m_app(app) { }
 
 KShimData::KShimData(const std::vector<uint8_t> &payLoad)
 {
@@ -67,22 +67,22 @@ KShimData::KShimData(const std::vector<uint8_t> &payLoad)
         break;
     }
     kLog << "Json Data: " << data.dump(4);
-    m_app = KShimLib::path(data["app"].get<KShimLib::string>());
+    m_app = std::filesystem::path(data["app"].get<KShimLib::string>());
     m_args = data["args"].get<std::vector<KShimLib::string>>();
     m_env = data["env"].get<std::vector<std::pair<KShimLib::string, KShimLib::string>>>();
 }
 
-KShimLib::path KShimData::app() const
+std::filesystem::path KShimData::app() const
 {
     return m_app;
 }
 
-KShimLib::path KShimData::appAbs() const
+std::filesystem::path KShimData::appAbs() const
 {
     return makeAbsouteCommand(app());
 }
 
-void KShimData::setApp(const KShimLib::path &app)
+void KShimData::setApp(const std::filesystem::path &app)
 {
     m_app = app;
 }
@@ -148,7 +148,7 @@ std::vector<uint8_t> KShimData::toJson() const
     return out;
 }
 
-KShimLib::path KShimData::makeAbsouteCommand(const KShimLib::path &path) const
+std::filesystem::path KShimData::makeAbsouteCommand(const std::filesystem::path &path) const
 {
     if (path.is_absolute()) {
         return path;

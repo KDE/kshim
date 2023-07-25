@@ -5,5 +5,5 @@
 #define TEST_EQ(X, Y) kLog << #X  "==" #Y ": " <<  X << "==" << Y; if(X != Y) { kLog2(KLog::Type::Fatal)<< "Failed";}
 
 namespace KShimTest {
-    auto binaryDir(){ return KShimLib::path(KShimLib::string_view(KSTRING("@CMAKE_BINARY_DIR@/bin"s))); };
+    auto binaryDir(){ return std::filesystem::path(KShimLib::string_view(KSTRING("@CMAKE_BINARY_DIR@/bin"s))); };
 }

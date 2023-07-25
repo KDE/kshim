@@ -32,9 +32,9 @@
 
 using namespace std;
 
-KShimLib::path KShimLib::binaryName()
+std::filesystem::path KShimLib::binaryName()
 {
-    static const KShimLib::path path = [] {
+    static const std::filesystem::path path = [] {
         std::wstring buf;
         size_t size;
         do {
@@ -43,28 +43,28 @@ KShimLib::path KShimLib::binaryName()
                                       static_cast<DWORD>(buf.size()));
         } while (GetLastError() == ERROR_INSUFFICIENT_BUFFER);
         buf.resize(size);
-        return KShimLib::path(buf);
+        return std::filesystem::path(buf);
     }();
     return path;
 }
 
-bool KShimLib::exists(const KShimLib::path &path)
+bool KShimLib::exists(const std::filesystem::path &path)
 {
     DWORD dwAttrib = GetFileAttributesW(path.wstring().data());
 
     return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
+std::filesystem::path KShimLib::findInPath(const std::filesystem::path &path)
 {
-    auto find = [](const std::wstring &dir, const KShimLib::path &name) {
+    auto find = [](const std::wstring &dir, const std::filesystem::path &name) {
         const std::wstring ext = name.extension().empty() ? L".exe" : std::wstring(name.extension());
         std::wstring buf;
         size_t size;
         wchar_t *filePart;
         size = SearchPathW(dir.data(), name.wstring().data(), ext.data(), 0, nullptr, &filePart);
         if (size == 0) {
-            return KShimLib::path();
+            return std::filesystem::path();
         }
         buf.resize(size);
         size = SearchPathW(dir.data(), name.wstring().data(), ext.data(),
@@ -75,7 +75,7 @@ KShimLib::path KShimLib::findInPath(const KShimLib::path &path)
                                      << buf.size() << " " << size;
         }
         buf.resize(size);
-        return KShimLib::path(buf);
+        return std::filesystem::path(buf);
     };
     auto path_env = std::wstringstream(KShimLib::getenv(L"PATH"));
     std::wstring dir;

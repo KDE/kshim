@@ -87,7 +87,7 @@ BOOL CALLBACK resourceCallback(HMODULE, wchar_t *, wchar_t *name, intptr_t *cont
     return false;
 }
 
-void updateResources(const KShimLib::path &dest, const std::vector<KShimResource> &resources)
+void updateResources(const std::filesystem::path &dest, const std::vector<KShimResource> &resources)
 {
     auto updateHandle = BeginUpdateResourceW(dest.wstring().data(), false);
     if (!updateHandle) {
@@ -113,7 +113,7 @@ void updateResources(const KShimLib::path &dest, const std::vector<KShimResource
 }
 namespace KShimGenPrivate {
 
-void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
+void updateIcon(const std::filesystem::path &src, const std::filesystem::path &dest)
 {
     auto exe = LoadLibraryExW(src.wstring().data(), nullptr, LOAD_LIBRARY_AS_DATAFILE);
     if (!exe) {
@@ -187,7 +187,7 @@ void updateIcon(const KShimLib::path &src, const KShimLib::path &dest)
     }
 }
 
-void setPayload(const KShimLib::path &dest, const std::vector<uint8_t> &payload)
+void setPayload(const std::filesystem::path &dest, const std::vector<uint8_t> &payload)
 {
     updateResources(dest, { { (void *)payload.data(), payload.size(), KShimLib::PayLoadKey.data(), KShimLib::PayloadCategory.data() } });
 }
