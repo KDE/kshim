@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0056 NEW)
 
 project(KShim LANGUAGES CXX VERSION 0.6.0)
@@ -30,9 +30,9 @@ endif()
 
 #link runtime static
 if(MSVC)
-    foreach(_bt DEBUG RELEASE RELWITHDEBINFO)
+    foreach(_bt RELEASE RELWITHDEBINFO)
             string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
-    endforeach(_bt DEBUG RELEASE RELWITHDEBINFO)
+    endforeach()
 elseif(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     set(CMAKE_EXE_LINKER_FLAGS_OLD ${CMAKE_EXE_LINKER_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS ${MAKE_EXE_LINKER_FLAGS} -static )
