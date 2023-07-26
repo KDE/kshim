@@ -70,6 +70,7 @@ KShimData::KShimData(const std::vector<uint8_t> &payLoad)
     m_app = std::filesystem::path(data["app"].get<KShimLib::string>());
     m_args = data["args"].get<std::vector<KShimLib::string>>();
     m_env = data["env"].get<std::vector<std::pair<KShimLib::string, KShimLib::string>>>();
+    m_envOverrideEnabled = data["envOverrideEnabled"].get<bool>();
 }
 
 std::filesystem::path KShimData::app() const
@@ -132,6 +133,7 @@ std::vector<uint8_t> KShimData::toJson() const
 #endif
         { "args", args() },
         { "env", env() },
+        { "envOverrideEnabled", isEnvOverrideEnabled() }
     };
     std::vector<uint8_t> out;
     switch (KSHIM_DATA_FORMAT()) {
@@ -229,4 +231,31 @@ KShimLib::string KShimData::quoteArgs(const std::vector<KShimLib::string_view> &
         command << " " << quote(arg);
     }
     return command.str();
+}
+
+bool KShimData::isEnvOverrideEnabled() const
+{
+    return m_envOverrideEnabled;
+}
+
+void KShimData::setEnvOverrideEnabled(bool envOverrideEnabled)
+{
+    m_envOverrideEnabled = envOverrideEnabled;
+}
+
+std::filesystem::path KShimData::appAbsWithOverride() const
+{
+    if (m_envOverrideEnabled) {
+        KShimLib::stringstream stream;
+        stream << "KSHIM_" << KShimLib::string(KShimLib::binaryName().filename());
+        const auto overrideApp =
+                std::filesystem::path(KShimLib::getenv(stream.str(), KShimLib::string(appAbs())));
+        if (overrideApp.is_absolute()) {
+            return overrideApp;
+        }
+        kLog2(KLog::Type::Error) << stream.str()
+                                 << " must be absolute, current value: " << overrideApp
+                                 << " falling back to internal value " << appAbs();
+    }
+    return appAbs();
 }

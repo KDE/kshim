@@ -100,14 +100,14 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
     STARTUPINFOW info = {};
     info.cb = sizeof(info);
     PROCESS_INFORMATION pInfo = {};
+    const auto app = data.appAbsWithOverride();
     const auto arguments = data.formatCommand(args);
-    kLog << data.appAbs() << " " << arguments;
+    kLog << app << " " << arguments;
     kLog << "CommandLength: " << arguments.size();
 
-    if (!CreateProcessW(data.appAbs().wstring().c_str(), const_cast<wchar_t *>(arguments.c_str()),
-                        nullptr, nullptr, true,
-                        INHERIT_PARENT_AFFINITY | CREATE_UNICODE_ENVIRONMENT, nullptr, nullptr,
-                        &info, &pInfo)) {
+    if (!CreateProcessW(app.wstring().c_str(), const_cast<wchar_t *>(arguments.c_str()), nullptr,
+                        nullptr, true, INHERIT_PARENT_AFFINITY | CREATE_UNICODE_ENVIRONMENT,
+                        nullptr, nullptr, &info, &pInfo)) {
         const auto error = GetLastError();
         kLog2(KLog::Type::Error) << "Failed to start target" << _com_error(error).ErrorMessage();
         return static_cast<int>(error);

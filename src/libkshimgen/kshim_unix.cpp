@@ -99,7 +99,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
     auto addArg = [&arguments](const KShimLib::string_view &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
-    const auto app = data.appAbs().string();
+    const auto app = data.appAbsWithOverride().string();
     addArg(app);
     for (const auto &s : data.args()) {
         addArg(s);
@@ -112,7 +112,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
 
     {
         auto log = kLog << "Command:";
-        log << data.appAbs();
+        log << app;
         for (const char *s : arguments) {
             if (s) {
                 log << " " << s;

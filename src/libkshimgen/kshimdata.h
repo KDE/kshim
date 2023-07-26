@@ -53,6 +53,12 @@ public:
     std::filesystem::path appAbs() const;
     void setApp(const std::filesystem::path &app);
 
+    /***
+     * If isEnvOverrideEnabled is true this will return either appAbs or the absolute KSHIM_shimname
+     * env var
+     */
+    std::filesystem::path appAbsWithOverride() const;
+
     const std::vector<KShimLib::string> &args() const;
     void setArgs(const std::vector<KShimLib::string_view> &args);
     void addArg(const KShimLib::string_view &arg);
@@ -64,6 +70,13 @@ public:
     KShimLib::string formatCommand(const std::vector<KShimLib::string_view> &args) const;
     KShimLib::string formatArgs(const std::vector<KShimLib::string_view> &args) const;
 
+    /***
+     *
+     * When enabled the shim will try look for KSHIM_shimname for app()
+     */
+    bool isEnvOverrideEnabled() const;
+    void setEnvOverrideEnabled(bool envOverrideEnabled);
+
     std::vector<uint8_t> toJson() const;
 
 private:
@@ -74,6 +87,7 @@ private:
     std::filesystem::path m_app;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
+    bool m_envOverrideEnabled = false;
 };
 
 #endif // KSHIMDATA_H
