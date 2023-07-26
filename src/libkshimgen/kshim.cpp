@@ -142,16 +142,65 @@ void KLog::setLoggingEnabled(bool loggingEnabled)
 
 KLog &operator<<(KLog &log, const std::filesystem::path &t)
 {
-#ifdef _WIN32
-    log << t.wstring();
-#else
-    log << t.string();
-#endif
-    return log;
+    return log << t.native();
 }
 
 KLog &operator<<(KLog &log, const std::string &t)
 {
     log << t.data();
     return log;
+}
+
+KShimLib::string KShimLib::quoteArgs(const std::vector<KShimLib::string_view> &args)
+{
+    KShimLib::stringstream command;
+    for (const auto &arg : args) {
+        command << " " << quote(arg);
+    }
+    return command.str();
+}
+
+KShimLib::string KShimLib::quote(const KShimLib::string_view &arg)
+{
+    // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
+    if (arg.empty()) {
+        return KSTRING("\"\"");
+    }
+    bool needsQuote = false;
+    for (const auto c : arg) {
+        needsQuote = c == ' ' || c == '\t';
+        if (needsQuote) {
+            break;
+        }
+    }
+    KShimLib::stringstream out;
+    KShimLib::stringstream backslash;
+    if (needsQuote) {
+        out << '"';
+    }
+    for (const auto c : arg) {
+        if (c == '\\') {
+            backslash << c;
+        } else if (c == '"') {
+            const auto bs = backslash.str();
+            out << bs << bs << "\\\"";
+            backslash.str(KShimLib::string());
+        } else {
+            const auto bs = backslash.str();
+            if (!bs.empty()) {
+                out << bs;
+                backslash.str(KShimLib::string());
+            }
+            out << c;
+        }
+    }
+    const auto bs = backslash.str();
+    if (!bs.empty()) {
+        out << bs;
+    }
+    if (needsQuote) {
+        out << bs;
+        out << '"';
+    }
+    return out.str();
 }

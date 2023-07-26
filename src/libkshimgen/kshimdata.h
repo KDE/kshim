@@ -67,7 +67,6 @@ public:
     void setEnv(const std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> &env);
     void addEnvVar(const std::pair<KShimLib::string_view, KShimLib::string_view> &var);
 
-    KShimLib::string formatCommand(const std::vector<KShimLib::string_view> &args) const;
     KShimLib::string formatArgs(const std::vector<KShimLib::string_view> &args) const;
 
     /***
@@ -77,17 +76,22 @@ public:
     bool isEnvOverrideEnabled() const;
     void setEnvOverrideEnabled(bool envOverrideEnabled);
 
+    /***
+     * Pass the original arg0 to the target process to emulate symlink behaviour
+     */
+    bool isKeepArgv0Enabled() const;
+    void setKeepArgv0Enabled(bool keepArg0Enabled);
+
     std::vector<uint8_t> toJson() const;
 
 private:
-    KShimLib::string quote(const KShimLib::string_view &arg) const;
-    KShimLib::string quoteArgs(const std::vector<KShimLib::string_view> &args) const;
     std::filesystem::path makeAbsouteCommand(const std::filesystem::path &_path) const;
 
     std::filesystem::path m_app;
     std::vector<KShimLib::string> m_args;
     std::vector<std::pair<KShimLib::string, KShimLib::string>> m_env;
     bool m_envOverrideEnabled = false;
+    bool m_keepArgv0Enabled = false;
 };
 
 #endif // KSHIMDATA_H

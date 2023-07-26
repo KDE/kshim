@@ -22,17 +22,25 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
-#ifndef KSHIMGEN_H
-#define KSHIMGEN_H
 
-#include "kshim.h"
+#include "nlohmann/json.hpp"
 
-namespace KShimGen {
-int main(const std::vector<KShimLib::string_view> &args);
-bool createShim(const KShimLib::string_view &appName, const std::filesystem::path &target,
-                const std::vector<KShimLib::string_view> &args,
-                const std::vector<KShimLib::string_view> &env, bool createGuiApplication,
-                bool enableEnvOverride, bool keepArg0);
+#include <iostream>
+#include <fstream>
+
+int main(int argc, char **argv)
+{
+    std::vector<std::string> args;
+    args.resize(argc);
+    for (size_t i = 0; i < static_cast<size_t>(argc); ++i) {
+        args[i] = argv[i];
+    }
+
+    const auto json = nlohmann::json({ { "args", args } }).dump();
+    std::cout << json << std::endl;
+    std::ofstream out;
+    out.open("dump_args.json");
+    out << json;
+    out.close();
+    return 0;
 }
-
-#endif // KSHIMGEN_H

@@ -71,6 +71,7 @@ KShimData::KShimData(const std::vector<uint8_t> &payLoad)
     m_args = data["args"].get<std::vector<KShimLib::string>>();
     m_env = data["env"].get<std::vector<std::pair<KShimLib::string, KShimLib::string>>>();
     m_envOverrideEnabled = data["envOverrideEnabled"].get<bool>();
+    m_keepArgv0Enabled = data["keepArgv0Enabled"].get<bool>();
 }
 
 std::filesystem::path KShimData::app() const
@@ -103,38 +104,21 @@ void KShimData::addArg(const KShimLib::string_view &arg)
     m_args.push_back(KShimLib::string(arg));
 }
 
-KShimLib::string KShimData::formatCommand(const std::vector<KShimLib::string_view> &arguments) const
-{
-    KShimLib::stringstream cmd;
-    cmd <<
-#ifdef _WIN32
-            quote(appAbs().wstring())
-#else
-            quote(appAbs().string())
-#endif
-        << formatArgs(arguments);
-    return cmd.str();
-}
-
 KShimLib::string KShimData::formatArgs(const std::vector<KShimLib::string_view> &arguments) const
 {
     KShimLib::stringstream cmd;
-    cmd << quoteArgs({ args().cbegin(), args().cend() }) << quoteArgs(arguments);
+    cmd << KShimLib::quoteArgs({ args().cbegin(), args().cend() })
+        << KShimLib::quoteArgs(arguments);
     return cmd.str();
 }
 
 std::vector<uint8_t> KShimData::toJson() const
 {
-    const auto jsonData = json {
-#ifdef _WIN32
-        { "app", app().wstring() },
-#else
-        { "app", app().string() },
-#endif
-        { "args", args() },
-        { "env", env() },
-        { "envOverrideEnabled", isEnvOverrideEnabled() }
-    };
+    const auto jsonData = json { { "app", app().native() },
+                                 { "args", args() },
+                                 { "env", env() },
+                                 { "envOverrideEnabled", isEnvOverrideEnabled() },
+                                 { "keepArgv0Enabled", isKeepArgv0Enabled() } };
     std::vector<uint8_t> out;
     switch (KSHIM_DATA_FORMAT()) {
     case Format::Json: {
@@ -179,60 +163,6 @@ void KShimData::addEnvVar(const std::pair<KShimLib::string_view, KShimLib::strin
     m_env.push_back({ KShimLib::string(var.first), KShimLib::string(var.second) });
 }
 
-KShimLib::string KShimData::quote(const KShimLib::string_view &arg) const
-{
-    // based on https://github.com/python/cpython/blob/master/Lib/subprocess.py#L493
-    if (arg.empty()) {
-        return KSTRING("\"\"");
-    }
-    bool needsQuote = false;
-    for (const auto c : arg) {
-        needsQuote = c == ' ' || c == '\t';
-        if (needsQuote) {
-            break;
-        }
-    }
-    KShimLib::stringstream out;
-    KShimLib::stringstream backslash;
-    if (needsQuote) {
-        out << '"';
-    }
-    for (const auto c : arg) {
-        if (c == '\\') {
-            backslash << c;
-        } else if (c == '"') {
-            const auto bs = backslash.str();
-            out << bs << bs << "\\\"";
-            backslash.str(KShimLib::string());
-        } else {
-            const auto bs = backslash.str();
-            if (!bs.empty()) {
-                out << bs;
-                backslash.str(KShimLib::string());
-            }
-            out << c;
-        }
-    }
-    const auto bs = backslash.str();
-    if (!bs.empty()) {
-        out << bs;
-    }
-    if (needsQuote) {
-        out << bs;
-        out << '"';
-    }
-    return out.str();
-}
-
-KShimLib::string KShimData::quoteArgs(const std::vector<KShimLib::string_view> &args) const
-{
-    KShimLib::stringstream command;
-    for (const auto &arg : args) {
-        command << " " << quote(arg);
-    }
-    return command.str();
-}
-
 bool KShimData::isEnvOverrideEnabled() const
 {
     return m_envOverrideEnabled;
@@ -258,4 +188,14 @@ std::filesystem::path KShimData::appAbsWithOverride() const
                                  << " falling back to internal value " << appAbs();
     }
     return appAbs();
+}
+
+bool KShimData::isKeepArgv0Enabled() const
+{
+    return m_keepArgv0Enabled;
+}
+
+void KShimData::setKeepArgv0Enabled(bool keepArgv0Enabled)
+{
+    m_keepArgv0Enabled = keepArgv0Enabled;
 }

@@ -113,7 +113,7 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
 bool KShimGen::createShim(const KShimLib::string_view &appName, const std::filesystem::path &target,
                           const std::vector<KShimLib::string_view> &args,
                           const std::vector<KShimLib::string_view> &_env, bool createGuiApplication,
-                          bool enableEnvOverride)
+                          bool enableEnvOverride, bool keepArg0)
 {
     std::vector<std::pair<KShimLib::string_view, KShimLib::string_view>> env;
     env.reserve(_env.size());
@@ -127,6 +127,7 @@ bool KShimGen::createShim(const KShimLib::string_view &appName, const std::files
     shimData.setArgs(args);
     shimData.setEnv(env);
     shimData.setEnvOverrideEnabled(enableEnvOverride);
+    shimData.setKeepArgv0Enabled(keepArg0);
     const std::vector<char> binary = readBinary(createGuiApplication);
     if (!binary.empty()) {
         return writeBinary(outApp, shimData, binary);
@@ -142,20 +143,21 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
     std::vector<KShimLib::string_view> env;
     bool gui = false;
     bool enableEnvOverride = false;
+    bool keepArgv0 = false;
 
-    auto help =
-            [](const KShimLib::string_view &msg) {
-                kLog2(KLog::Type::Error)
-                        << msg << "\n"
-                        << "--create shim target\t\t\tCreate a shim\n"
-                        << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
-                        << "--enable-env-override\t\t\twhether to allow overriding the target with "
-                           "the env var KSHIM_shim\n"
+    auto help = [](const KShimLib::string_view &msg) {
+        kLog2(KLog::Type::Error)
+                << msg << "\n"
+                << "--create shim target\t\t\tCreate a shim\n"
+                << "--env key=val\t\t\t\tadditional environment varriables for the shim\n"
+                << "--enable-env-override\t\t\twhether to allow overriding the target with "
+                   "the env var KSHIM_shim\n"
+                << "--keep-argv0\t\t\t\twhether to keep the original arg0 (emulates symlinks)\n"
 #ifdef _WIN32
-                        << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
+                << "--gui\t\t\t\t\tcreate a gui application (only supported on Windows)\n"
 #endif
-                        << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
-            };
+                << "-- arg1 arg2 arg3...\t\t\targuments that get passed to the target";
+    };
     auto nextArg = [&](std::vector<KShimLib::string_view>::const_iterator &it,
                        const KShimLib::string_view &helpText) -> KShimLib::string_view {
         if (it != args.cend()) {
@@ -177,6 +179,8 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
             env.push_back(nextArg(it, KSTRING("--env key=val")));
         } else if (arg == KSTRING("--enable-env-override")) {
             enableEnvOverride = true;
+        } else if (arg == KSTRING("--keep-argv0")) {
+            keepArgv0 = true;
         } else if (arg == KSTRING("--")) {
             while (it != args.cend()) {
                 arguments.push_back(nextArg(it, KSTRING("")));
@@ -205,7 +209,9 @@ int KShimGen::main(const std::vector<KShimLib::string_view> &args)
         }
     }
     if (!target.empty()) {
-        return KShimGen::createShim(app, target, arguments, env, gui, enableEnvOverride) ? 0 : -1;
+        return KShimGen::createShim(app, target, arguments, env, gui, enableEnvOverride, keepArgv0)
+                ? 0
+                : -1;
     }
     help(KSTRING(""));
     return -1;

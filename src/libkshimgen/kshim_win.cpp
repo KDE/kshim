@@ -32,6 +32,19 @@
 
 using namespace std;
 
+namespace {
+auto formatCommand(const KShimData &data, const std::vector<KShimLib::string_view> &arguments)
+{
+    auto app = data.appAbsWithOverride();
+    if (data.isKeepArgv0Enabled()) {
+        app = KShimLib::binaryName();
+    }
+    KShimLib::stringstream cmd;
+    cmd << KShimLib::quote(app.native()) << data.formatArgs(arguments);
+    return cmd.str();
+}
+}
+
 std::filesystem::path KShimLib::binaryName()
 {
     static const std::filesystem::path path = [] {
@@ -101,7 +114,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
     info.cb = sizeof(info);
     PROCESS_INFORMATION pInfo = {};
     const auto app = data.appAbsWithOverride();
-    const auto arguments = data.formatCommand(args);
+    const auto arguments = formatCommand(data, args);
     kLog << app << " " << arguments;
     kLog << "CommandLength: " << arguments.size();
 

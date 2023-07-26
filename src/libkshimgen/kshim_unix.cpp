@@ -99,8 +99,13 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
     auto addArg = [&arguments](const KShimLib::string_view &s) {
         arguments.push_back(const_cast<char *>(s.data()));
     };
-    const auto app = data.appAbsWithOverride().string();
-    addArg(app);
+    // we need to copy the string as we only pass a pointer to posix_spawn
+    const auto app = data.appAbsWithOverride().native();
+    auto argv0 = app;
+    if (data.isKeepArgv0Enabled()) {
+        argv0 = KShimLib::binaryName().native();
+    }
+    addArg(argv0);
     for (const auto &s : data.args()) {
         addArg(s);
     }

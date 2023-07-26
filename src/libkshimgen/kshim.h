@@ -47,6 +47,10 @@ KShimLib::string getenv(const KShimLib::string_view &var,
 bool exists(const std::filesystem::path &path);
 
 std::filesystem::path findInPath(const std::filesystem::path &path);
+
+KShimLib::string quote(const KShimLib::string_view &arg);
+
+KShimLib::string quoteArgs(const std::vector<KShimLib::string_view> &args);
 }
 
 class KLog
