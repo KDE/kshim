@@ -86,7 +86,7 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-#if __APPLE__
+#ifdef __APPLE__
     const auto codesign = KShimLib::findInPath(std::filesystem::path(KShimLib::string("codesign")));
     const int result = KShimLib::run(KShimData(codesign), { "-s", "-", name.string() });
     if (result != 0) {

@@ -50,7 +50,7 @@ std::filesystem::path KShimLib::binaryName()
 {
     static std::filesystem::path _path = [] {
         size_t size;
-#if __APPLE__
+#ifdef __APPLE__
         string out(PROC_PIDPATHINFO_MAXSIZE, 0);
         size = proc_pidpath(getpid(), const_cast<char *>(out.data()), out.size());
 #elif defined(__FreeBSD__)

@@ -63,6 +63,7 @@ KLog::~KLog()
 #else
                 std::cerr << line << std::endl;
 #endif
+                [[fallthrough]];
             case KLog::Type::Debug: {
                 if (doLog()) {
                     static auto _log = [] {
