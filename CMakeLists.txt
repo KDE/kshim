@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0056 NEW)
 
-project(KShim LANGUAGES CXX VERSION 0.6.0)
+project(KShim LANGUAGES CXX VERSION 0.6.1)
 set (CMAKE_CXX_STANDARD_REQUIRED 17)
 set (CMAKE_CXX_STANDARD 17)
 
