@@ -2,3 +2,46 @@ include:
   - https://invent.kde.org/sysadmin/ci-utilities/raw/master/gitlab-templates/windows.yml
   - https://invent.kde.org/sysadmin/ci-utilities/raw/master/gitlab-templates/linux.yml
   - https://invent.kde.org/sysadmin/ci-utilities/raw/master/gitlab-templates/freebsd.yml
+
+
+linux_prebuild_craft:
+  stage: build
+  image: invent-registry.kde.org/sysadmin/ci-images/sles15-craft:latest
+  tags:
+    - Linux
+  variables:
+    GIT_STRATEGY: none
+    KDECI_CRAFT_PLATFORM: linux-64-gcc
+    KDECI_CRAFT_CONFIG: ci-utilities/craft/qt5/CraftConfig.ini
+    KDECI_CRAFT_PROJECT_CONFIG: $CI_PROJECT_DIR/src/.craft.ini
+    KDECI_CRAFT_BLUEPRINT_NAME: kshimgen
+  before_script:
+    - export LANG=en_US.UTF-8
+    - git clone ${CI_MERGE_REQUEST_SOURCE_PROJECT_URL:-$CI_REPOSITORY_URL} --branch=$CI_COMMIT_REF_NAME src/
+     # Create empty .craft.ini if none exists
+    - touch $KDECI_CRAFT_PROJECT_CONFIG
+    - git clone https://invent.kde.org/packaging/craftmaster --branch=master
+    - git clone https://invent.kde.org/sysadmin/ci-utilities
+    # Define a short cut for the lengthy CraftMaster command line
+    - function craftmaster { python3 craftmaster/CraftMaster.py --config $KDECI_CRAFT_CONFIG --config-override $KDECI_CRAFT_PROJECT_CONFIG --target $KDECI_CRAFT_PLATFORM $@; }
+  script:
+    - craftmaster --setup
+    # Get Craft itself ready
+    - craftmaster -c -i --options virtual.ignored=True --update craft
+    # Install all of our dependencies
+    - craftmaster -c 7zip
+    - craftmaster -c --install-deps $KDECI_CRAFT_BLUEPRINT_NAME
+    # Build the actual application
+    - craftmaster -c -i --no-cache --target master --src-dir $CI_PROJECT_DIR/src/ $KDECI_CRAFT_BLUEPRINT_NAME
+    # Create package
+    - craftmaster -c --target master --src-dir $CI_PROJECT_DIR/src/ --package --option [Packager]PackageType=PortablePackager $KDECI_CRAFT_BLUEPRINT_NAME
+    # Save our package
+    - packageDir=$(craftmaster -c -q --get "packageDestinationDir()" virtual/base)
+    - mkdir $CI_PROJECT_DIR/.kde-ci-packages/
+    - cp -vf $packageDir/*.tar.7z $CI_PROJECT_DIR/.kde-ci-packages/
+  artifacts:
+    expire_in: 3 days
+    when: on_success
+    expose_as: "Craft"
+    paths:
+     - ".kde-ci-packages/"
