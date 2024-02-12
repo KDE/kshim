@@ -1,11 +1,13 @@
 
 function(add_shim target file)
+    if(ON)
     if(NOT MSVC)
         if (APPLE)
             add_custom_command(TARGET ${target} POST_BUILD COMMAND strip -x -S "$<TARGET_FILE:${target}>")
         else()
             add_custom_command(TARGET ${target} POST_BUILD COMMAND strip -s "$<TARGET_FILE:${target}>")
         endif()
+    endif()
     endif()
     add_custom_command(OUTPUT ${file} DEPENDS ${target})
     cmrc_add_resources(kshim_embedded_resource ${file} WHENCE ${PROJECT_BINARY_DIR})

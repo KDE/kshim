@@ -29,9 +29,13 @@
 
 #include <vector>
 
+#if 0
 namespace {
 static volatile KShimPayLoad StartupCommand { 0, KShimDataDef };
 }
+#else
+static const char __attribute__((section(".kshimdata"))) JsonData[] = "";
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -41,5 +45,10 @@ int main(int argc, char *argv[])
         args[i] = argv[i];
     }
 
-    return KShim::main({ StartupCommand.cmd, StartupCommand.cmd + StartupCommand.size }, args);
+    // don't use strlen as it will be computed at compile time...
+    int len = 0;
+    while (*(JsonData + len) != 0) {
+        ++len;
+    }
+    return KShim::main({ JsonData, JsonData + len }, args);
 }
