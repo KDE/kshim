@@ -46,21 +46,26 @@ void KShimGenPrivate::setPayload(const std::filesystem::path &dest,
     // look for the end mark and search for the start from there
     const KShimPayLoad findPayLoad { 0, KShimDataDef };
     const char *_start = reinterpret_cast<const char *>(&findPayLoad);
-    auto cmdIt = std::search(dataOut.begin(), dataOut.end(), _start, _start + sizeof(KShimPayLoad));
-    if (cmdIt == dataOut.end()) {
-        kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
-        exit(1);
-    }
-    KShimPayLoad *outPayLoad = reinterpret_cast<KShimPayLoad *>(&*cmdIt);
+    // mac universal binaries might contain more than one compilation
+    // replace all occurences of the placeholder KSHIM_MULTI_ARCH_COUNT
+    for (int i = 0; i < KSHIM_MULTI_ARCH_COUNT; ++i) {
+        auto cmdIt =
+                std::search(dataOut.begin(), dataOut.end(), _start, _start + sizeof(KShimPayLoad));
+        if (cmdIt == dataOut.end()) {
+            kLog2(KLog::Type::Error) << "Failed to patch binary, please report your compiler";
+            exit(1);
+        }
+        KShimPayLoad *outPayLoad = reinterpret_cast<KShimPayLoad *>(&*cmdIt);
 
-    if (payload.size() > KShimLib::DataStorageSize) {
-        kLog2(KLog::Type::Error) << "Data buffer is too small " << payload.size() << " > "
-                                 << KShimLib::DataStorageSize << " :\n"
-                                 << payload.data();
-        return exit(1);
+        if (payload.size() > KShimLib::DataStorageSize) {
+            kLog2(KLog::Type::Error) << "Data buffer is too small " << payload.size() << " > "
+                                     << KShimLib::DataStorageSize << " :\n"
+                                     << payload.data();
+            exit(1);
+        }
+        outPayLoad->size = payload.size();
+        std::copy(payload.cbegin(), payload.cend(), outPayLoad->cmd);
     }
-    outPayLoad->size = payload.size();
-    std::copy(payload.cbegin(), payload.cend(), outPayLoad->cmd);
 
     {
         std::ofstream out(dest.string(), std::ios::out | std::ios::binary);
