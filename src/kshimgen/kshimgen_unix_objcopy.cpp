@@ -48,9 +48,8 @@ void KShimGenPrivate::setPayload(const std::filesystem::path &dest,
                                  const std::vector<uint8_t> &payload)
 {
     TmpDeleterRaii jsonFile =
-            std::filesystem::temp_directory_path() / std::format("kshim-payload-{}.json", getpid());
-    TmpDeleterRaii oFile = std::filesystem::temp_directory_path()
-            / std::format("kshim-payload-{}.json.o", getpid());
+            std::filesystem::temp_directory_path() / std::string("kshim-payload.json");
+
     std::ofstream out(jsonFile.path().string(), std::ios::out | std::ios::binary);
     if (!out.is_open()) {
         kLog2(KLog::Type::Error) << "Failed to open out: " << jsonFile.path();
@@ -60,7 +59,8 @@ void KShimGenPrivate::setPayload(const std::filesystem::path &dest,
     out.write("\0", 1);
     out.close();
 
-    const auto objcopy = KShimLib::findInPath(std::filesystem::path(KShimLib::string("objcopy")));
+    const auto objcopy =
+            KShimLib::findInPath(std::filesystem::path(KShimLib::string("llvm-objcopy")));
 #if 0
     int result = KShimLib::run(KShimData(objcopy), { "--input", "binary", "--output", "elf64-x86-64", "--binary-architecture", "i386:x86-64",
                 "--rename-section", ".data=.rodata,CONTENTS,ALLOC,LOAD,READONLY,DATA", jsonFile.path().string(), oFile.path().string() });
@@ -70,12 +70,13 @@ void KShimGenPrivate::setPayload(const std::filesystem::path &dest,
     }
 #endif
 
-    auto result = KShimLib::run(KShimData(objcopy),
-                                { "--update-section",
-                                  std::format(".kshimdata={}", jsonFile.path().string()),
-                                  dest.string(), std::format("{}2", dest.string()) });
+    auto result =
+            KShimLib::run(KShimData(objcopy),
+                          { "--update-section",
+                            std::string("__KSHIMDATA,__kshimdata=") + jsonFile.path().string(),
+                            dest.string(), dest.string() + "2" });
     if (result != 0) {
-        kLog2(KLog::Type::Error) << "Failed to generate object: " << oFile.path();
+        kLog2(KLog::Type::Error) << "Failed to generate object: " << dest;
         exit(result);
     }
 }

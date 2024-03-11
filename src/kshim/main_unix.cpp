@@ -34,7 +34,11 @@ namespace {
 static volatile KShimPayLoad StartupCommand { 0, KShimDataDef };
 }
 #else
+#if defined(__APPLE__) && defined(__MACH__)
+static const char __attribute__((section("__KSHIMDATA,__kshimdata"))) JsonData[1024 * 1000] = "";
+#else
 static const char __attribute__((section(".kshimdata"))) JsonData[] = "";
+#endif
 #endif
 
 int main(int argc, char *argv[])
