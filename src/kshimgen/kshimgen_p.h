@@ -31,5 +31,9 @@ namespace KShimGenPrivate {
  * Updat the icon in dest with the icons from src
  */
 void updateIcon(const std::filesystem::path &src, const std::filesystem::path &dest);
+#ifdef _WIN32
 void setPayload(const std::filesystem::path &dest, const std::vector<uint8_t> &payload);
+#else
+void patchBinary(std::vector<char> &dataOut, const std::vector<uint8_t> &payload);
+#endif
 }

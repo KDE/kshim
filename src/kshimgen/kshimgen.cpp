@@ -65,10 +65,11 @@ std::vector<char> readBinary(bool createGuiApplication)
 }
 
 bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
-                 const std::vector<char> &binary)
+                 std::vector<char> &&dataOut)
 {
-    std::vector<char> dataOut = binary;
-
+#ifndef _WIN32
+    KShimGenPrivate::patchBinary(dataOut, shimData.toJson());
+#endif
     const auto &_name = name;
     {
         std::ofstream out(_name, std::ios::out | std::ios::binary);
@@ -76,13 +77,11 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
             kLog2(KLog::Type::Error) << "Failed to open out: " << name;
             return false;
         }
-        out.write(dataOut.data(), static_cast<std::streamsize>(binary.size()));
+        out.write(dataOut.data(), static_cast<std::streamsize>(dataOut.size()));
 
         kLog << "Wrote: " << name << " " << out.tellp() << " bytes";
         out.close();
     }
-
-    KShimGenPrivate::setPayload(name, shimData.toJson());
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -95,6 +94,7 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
     }
 #endif
 #else
+    KShimGenPrivate::setPayload(name, shimData.toJson());
     // we can't use shimData.appAbs() as it depends on the location of the current binary, which
     // atm is kshimgen
     auto src = shimData.app();
@@ -128,9 +128,9 @@ bool KShimGen::createShim(const KShimLib::string_view &appName, const std::files
     shimData.setEnv(env);
     shimData.setEnvOverrideEnabled(enableEnvOverride);
     shimData.setKeepArgv0Enabled(keepArg0);
-    const std::vector<char> binary = readBinary(createGuiApplication);
+    std::vector<char> binary = readBinary(createGuiApplication);
     if (!binary.empty()) {
-        return writeBinary(outApp, shimData, binary);
+        return writeBinary(outApp, shimData, std::move(binary));
     }
     return false;
 }
