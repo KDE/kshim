@@ -125,7 +125,7 @@ int KShimLib::run(const KShimData &data, const std::vector<KShimLib::string_view
         }
     }
     pid_t pid;
-    int status = posix_spawn(&pid, app.data(), NULL, NULL, arguments.data(), environ);
+    int status = posix_spawn(&pid, app.data(), nullptr, nullptr, arguments.data(), environ);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
             if (WIFEXITED(status)) {
