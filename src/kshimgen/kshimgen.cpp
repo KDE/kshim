@@ -85,14 +85,6 @@ bool writeBinary(const std::filesystem::path &name, const KShimData &shimData,
 
 #ifndef _WIN32
     chmod(name.string().data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-#ifdef __APPLE__
-    const auto codesign = KShimLib::findInPath(std::filesystem::path(KShimLib::string("codesign")));
-    const int result = KShimLib::run(KShimData(codesign), { "-s", "-", name.string() });
-    if (result != 0) {
-        kLog << "Faied to sign" << name.string() << "exit code:" << result;
-        return false;
-    }
-#endif
 #else
     KShimGenPrivate::setPayload(name, shimData.toJson());
     // we can't use shimData.appAbs() as it depends on the location of the current binary, which
