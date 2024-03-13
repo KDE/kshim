@@ -29,10 +29,6 @@
 
 #include <vector>
 
-namespace {
-static volatile KShimPayLoad StartupCommand { 0, KShimDataDef };
-}
-
 int main(int argc, char *argv[])
 {
     std::vector<KShimLib::string_view> args;
@@ -41,5 +37,22 @@ int main(int argc, char *argv[])
         args[i] = argv[i];
     }
 
-    return KShim::main({ StartupCommand.cmd, StartupCommand.cmd + StartupCommand.size }, args);
+    std::vector<uint8_t> payload;
+    {
+        std::ifstream in(KShimLib::binaryName().string(), std::ios::in | std::ios::binary);
+        if (!in.is_open()) {
+            kLog2(KLog::Type::Error) << "Failed to open in: " << KShimLib::binaryName().string();
+            return 1;
+        }
+
+        int64_t size;
+        in.seekg(-signed(sizeof(size)), std::ios::end);
+        in.read(reinterpret_cast<char *>(&size), sizeof(size));
+        in.seekg(-signed(sizeof(size)) - size, std::ios::end);
+        payload.resize(size);
+        in.read(reinterpret_cast<char *>(payload.data()), size);
+        in.close();
+    }
+
+    return KShim::main(payload, args);
 }

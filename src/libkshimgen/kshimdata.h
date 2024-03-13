@@ -31,17 +31,6 @@
 #include <string>
 #include <vector>
 
-#ifndef WIN32
-// don't make const to prevent optimisation
-struct KShimPayLoad
-{
-    // an initialised data array starts with an size_t with the size of the payload
-    // followed by the formated payload
-    size_t size;
-    uint8_t cmd[KShimLib::DataStorageSize];
-};
-#endif
-
 class KShimData
 {
 public:
