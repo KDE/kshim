@@ -27,9 +27,7 @@ endif()
 
 #link runtime static
 if(MSVC)
-    foreach(_bt RELEASE RELWITHDEBINFO)
-            string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_${_bt} ${CMAKE_CXX_FLAGS_${_bt}})
-    endforeach()
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 elseif(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     set(CMAKE_EXE_LINKER_FLAGS_OLD ${CMAKE_EXE_LINKER_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS ${MAKE_EXE_LINKER_FLAGS} -static )
