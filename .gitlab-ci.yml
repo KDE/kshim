@@ -1,9 +1,9 @@
 include:
   - project: sysadmin/ci-utilities
     file:
-    - /gitlab-templates/windows.yml
-    - /gitlab-templates/linux.yml
-    - /gitlab-templates/freebsd.yml
+    - /gitlab-templates/windows-qt6.yml
+    - /gitlab-templates/linux-qt6.yml
+    - /gitlab-templates/freebsd-qt6.yml
 
 
 .craft_linux_portable_x86_64:
