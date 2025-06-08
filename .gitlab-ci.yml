@@ -14,7 +14,7 @@ include:
   variables:
     GIT_STRATEGY: none
     KDECI_CRAFT_PLATFORM: linux-64-gcc
-    KDECI_CRAFT_CONFIG: ci-utilities/craft/qt5/CraftConfig.ini
+    KDECI_CRAFT_CONFIG: ci-utilities/craft/qt6/CraftConfig.ini
     KDECI_CRAFT_PROJECT_CONFIG: $CI_PROJECT_DIR/src/.craft.ini
     KDECI_CRAFT_BLUEPRINT_NAME: $CI_PROJECT_NAME
   before_script:
