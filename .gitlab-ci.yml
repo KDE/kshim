@@ -8,18 +8,20 @@ include:
 
 .craft_linux_portable_x86_64:
   stage: build
-  image: invent-registry.kde.org/sysadmin/ci-images/sles15-craft:latest
+  image: storage.kde.org/vm-images/craft-appimage
   tags:
-    - Linux
+    - VM
+    - amd64
   variables:
     GIT_STRATEGY: none
     KDECI_CRAFT_PLATFORM: linux-64-gcc
-    KDECI_CRAFT_CONFIG: ci-utilities/craft/qt6/CraftConfig.ini
+    KDECI_CRAFT_CONFIG: craft-ci/qt6/CraftConfig.ini
     KDECI_CRAFT_PROJECT_CONFIG: $CI_PROJECT_DIR/src/.craft.ini
     KDECI_CRAFT_BLUEPRINT_NAME: $CI_PROJECT_NAME
   before_script:
     - export LANG=en_US.UTF-8
     - git clone https://invent.kde.org/packaging/craftmaster --branch=master
+    - git clone https://invent.kde.org/sysadmin/craft-ci.git --depth=1
     - git clone https://invent.kde.org/sysadmin/ci-utilities
     - python3 -u ci-utilities/gitlab-ci-clone.py src/
      # Create empty .craft.ini if none exists
@@ -27,6 +29,11 @@ include:
     # Define a short cut for the lengthy CraftMaster command line
     - function craftmaster { python3 craftmaster/CraftMaster.py --config $KDECI_CRAFT_CONFIG --config-override $KDECI_CRAFT_PROJECT_CONFIG --target $KDECI_CRAFT_PLATFORM $@; }
   script:
+    # explicitly set PKG_CONFIG_PATH, so /opt/rh/gcc-toolset-14/enable will append it to its own path
+    - export PKG_CONFIG_PATH=`/usr/bin/pkg-config --variable pc_path pkg-config`
+    # Make the compiler available
+    - source /opt/rh/gcc-toolset-14/enable
+    # Set up craft settings and blueprint settings
     - craftmaster --setup
     # Get Craft itself ready
     - craftmaster -c -i --options virtual.ignored=True --update craft
@@ -34,19 +41,19 @@ include:
     - craftmaster -c --install-deps $KDECI_CRAFT_BLUEPRINT_NAME
     - craftmaster -c 7zip
     # Build the actual application
-    - craftmaster -c -i --no-cache --target master --src-dir $CI_PROJECT_DIR/src/ $KDECI_CRAFT_BLUEPRINT_NAME
+    - craftmaster -c -i --no-cache --target master --options $KDECI_CRAFT_BLUEPRINT_NAME.srcDir=$CI_PROJECT_DIR/src/ $KDECI_CRAFT_BLUEPRINT_NAME
     # Create package
     - craftmaster -c --target master --src-dir $CI_PROJECT_DIR/src/ --package --option [Packager]PackageType=PortablePackager $KDECI_CRAFT_BLUEPRINT_NAME
     # Save our package
     - packageDir=$(craftmaster -c -q --get "packageDestinationDir()" virtual/base)
-    - mkdir $CI_PROJECT_DIR/.kde-ci-packages/
-    - cp -vf $packageDir/*.tar.7z $CI_PROJECT_DIR/.kde-ci-packages/
+    - mkdir $CI_PROJECT_DIR/kde-ci-packages/
+    - cp -vf $packageDir/*.tar.7z $CI_PROJECT_DIR/kde-ci-packages/
   artifacts:
     expire_in: 3 days
     when: on_success
     expose_as: "Portable Archive Linux"
     paths:
-     - ".kde-ci-packages/"
+     - "kde-ci-packages/"
 
 
 kshim_linux_prebuild:
